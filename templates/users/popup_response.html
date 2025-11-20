@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Closing...</title>
+</head>
+<body>
+    <script>
+        // This script is run inside the popup after a successful save
+        var newId = "{{ pk_value }}";
+        var newStr = "{{ str_value }}";
+        // This function is defined in the PARENT window (project_form.html)
+        opener.dismissAddAnotherPopup(window, newId, newStr);
+    </script>
+</body>
+</html>

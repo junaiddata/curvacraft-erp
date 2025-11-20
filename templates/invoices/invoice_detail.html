@@ -1,0 +1,91 @@
+<!-- templates/invoices/invoice_detail.html -->
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Invoice #{{ invoice.invoice_number }}{% endblock %}
+
+{% block content %}
+<a href="{% url 'projects:project_detail' pk=invoice.project.pk %}">&larr; Back to Project</a>
+
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+    <div>
+        <h1>Invoice</h1>
+        <h4>#{{ invoice.invoice_number }} for {{ invoice.project.customer.name }}</h4>
+    </div>
+    <div>
+        <!-- Action Buttons -->
+        {% if invoice.status != 'VOID' %}
+            <a href="{% url 'invoices:invoice_edit' pk=invoice.pk %}"><button type="button">Edit</button></a>
+        {% endif %}
+        <a href="{% url 'invoices:invoice_pdf' pk=invoice.pk %}" target="_blank"><button type="button">Generate PDF</button></a>
+    </div>
+</div>
+
+<!-- STATUS & ACTIONS SECTION -->
+<div style="background: #f8f9fa; padding: 1rem; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    
+    <!-- Only allow status changes if the invoice is NOT Void -->
+    {% if invoice.status != 'VOID' %}
+    <form method="post" style="display:inline-flex; align-items: center; gap: 10px;">
+        {% csrf_token %}
+        {{ status_form.status.label_tag }}
+        {{ status_form.status }}
+        <button type="submit">Update Status</button>
+    </form>
+    {% else %}
+    <p style="margin: 0;">Current Status: <strong>VOID</strong></p>
+    {% endif %}
+    
+    <!-- Void button logic is still valid -->
+    {% if invoice.status != 'PAID' and invoice.status != 'VOID' %}
+        <a href="{% url 'invoices:invoice_void' pk=invoice.pk %}">
+            <button style="background-color: var(--error);">Void Invoice</button>
+        </a>
+    {% endif %}
+</div>
+
+
+<!-- ITEMS TABLE -->
+<table style="width:100%; border-collapse: collapse;">
+    <thead style="background-color: #f4f4f4;">
+        <tr>
+            <th style="padding: 10px; text-align: left;">S/N</th>
+            <th style="padding: 10px; text-align: left;">Description</th>
+            <th style="padding: 10px; text-align: right;">Qty / %</th>
+            <th style="padding: 10px; text-align: left;">Type</th>
+            <th style="padding: 10px; text-align: right;">Unit Price / Project Total</th>
+            <th style="padding: 10px; text-align: right;">Line Total</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in invoice.items.all %}
+            <tr style="border-bottom: 1px solid #dee2e6;">
+                <td style="padding: 10px;">{{ forloop.counter }}</td>
+                <td style="padding: 10px;">{{ item.description|linebreaksbr }}</td>
+                <td style="padding: 10px; text-align: right;">{{ item.quantity|floatformat:2 }}</td>
+                <td style="padding: 10px;">{{ item.get_quantity_type_display }}</td>
+                <td style="padding: 10px; text-align: right;">{{ item.unit_price|floatformat:2|intcomma }}</td>
+                <td style="padding: 10px; text-align: right;">{{ item.total_amount|floatformat:2|intcomma }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- TOTALS SECTION -->
+<div style="width: 40%; margin-left: auto; margin-top: 2rem; text-align: right;">
+    <table style="width: 100%;">
+        <tr>
+            <td style="padding: 8px;"><strong>Subtotal</strong></td>
+            <td style="padding: 8px;">{{ invoice.subtotal|floatformat:2|intcomma }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 8px;"><strong>VAT ({{ invoice.tax_percentage|floatformat:2 }}%)</strong></td>
+            <td style="padding: 8px;">{{ invoice.tax_amount|floatformat:2|intcomma }}</td>
+        </tr>
+        <tr style="font-size: 1.2rem; border-top: 2px solid #333;">
+            <td style="padding: 8px;"><strong>Grand Total (AED)</strong></td>
+            <td style="padding: 8px;"><strong>{{ invoice.grand_total|floatformat:2|intcomma }}</strong></td>
+        </tr>
+    </table>
+</div>
+{% endblock %}

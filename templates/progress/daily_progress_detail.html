@@ -1,0 +1,132 @@
+<!-- templates/progress/daily_progress_detail.html -->
+{% extends "base.html" %}
+
+{% block title %}Daily Report for {{ report.date }}{% endblock %}
+
+{% block content %}
+
+<style>
+    .report-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    .card {
+        background-color: #ffffff;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        margin-bottom: 2rem;
+    }
+    .card-header {
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 1rem;
+        margin-bottom: 1rem;
+    }
+    .card-header h3 { margin-bottom: 0; }
+    .readonly-box {
+        background-color: #f8f9fa;
+        padding: 1rem;
+        border-radius: 6px;
+        border: 1px solid var(--border-color);
+    }
+    .form-actions {
+        margin-top: 1.5rem;
+        text-align: right;
+    }
+
+    /* Status Badges */
+    .status-badge {
+        padding: 0.25rem 0.6rem;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: bold;
+        color: white;
+        text-transform: uppercase;
+    }
+    .status-pending { background-color: #ffc107; color: #333; }
+    .status-submitted { background-color: #007bff; }
+    .status-reviewed { background-color: #28a745; }
+</style>
+
+<div class="report-container">
+    <!-- Page Header -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <div>
+            <h2>Daily Report</h2>
+            <h4>{{ report.project.title }} | {{ report.date|date:"l, d M Y" }}</h4>
+        </div>
+        <a href="{% url 'projects:project_detail' pk=report.project.pk %}">&larr; Back to Project</a>
+    </div>
+
+    <p>
+        <strong>Assigned to:</strong> {{ report.assigned_to.username }} |
+        <strong>Status:</strong> <span class="status-badge status-{{ report.status|lower }}">{{ report.get_status_display }}</span>
+    </p>
+
+    {% if messages %}{% for message in messages %}<p class="{{ message.tags }}">{{ message }}</p>{% endfor %}{% endif %}
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <!-- Card 1: Planned Task (Always Read-Only) -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Planned Task (from Admin)</h3>
+            </div>
+            <div class="readonly-box">
+                <p style="margin:0;">{{ report.planned_task|linebreaksbr }}</p>
+            </div>
+        </div>
+
+        <!-- Card 2: SCO Submission -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Your Progress Submission</h3>
+            </div>
+            {% if user_can_edit_sco_form %}
+                <!-- Editable form for SCO -->
+                {{ sco_form.actual_progress.label_tag }}
+                {{ sco_form.actual_progress }}
+                <br>
+                {{ sco_form.file_upload.label_tag }}
+                {{ sco_form.file_upload }}
+                {% if report.file_upload %}
+                    <small>Current file: <a href="{{ report.file_upload.url }}">{{ report.file_upload.name }}</a></small>
+                {% endif %}
+                <div class="form-actions">
+                    <button type="submit" name="submit_sco_progress">Save Progress</button>
+                </div>
+            {% else %}
+                <!-- Read-Only view for everyone else -->
+                <div class="readonly-box">
+                    <p style="margin:0;">{{ report.actual_progress|default:"Not submitted yet."|linebreaksbr }}</p>
+                </div>
+                {% if report.file_upload %}
+                    <p style="margin-top: 1rem;"><small><strong>Attachment:</strong> <a href="{{ report.file_upload.url }}">{{ report.file_upload.name }}</a></small></p>
+                {% endif %}
+            {% endif %}
+        </div>
+        
+        <!-- Card 3: Admin Review -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Admin Review</h3>
+            </div>
+            {% if user_can_edit_admin_form %}
+                 <!-- Editable form for Admin -->
+                {{ admin_form.admin_remarks.label_tag }}
+                {{ admin_form.admin_remarks }}
+                <div class="form-actions">
+                    <button type="submit" name="submit_admin_review" style="background-color: var(--success-color);">Review & Close Day</button>
+                </div>
+            {% else %}
+                 <!-- Read-Only view for everyone else -->
+                 <div class="readonly-box">
+                    <p style="margin:0;">{{ report.admin_remarks|default:"No remarks yet."|linebreaksbr }}</p>
+                 </div>
+            {% endif %}
+        </div>
+    </form>
+</div>
+{% endblock %}

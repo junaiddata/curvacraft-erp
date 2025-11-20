@@ -1,0 +1,94 @@
+<!-- templates/enquiries/enquiry_list.html -->
+{% extends "base.html" %}
+
+{% block content %}
+
+<style>
+    .table-container {
+        background-color: #ffffff;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 0; /* Padding is handled by the table itself */
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        overflow-x: auto; /* For responsiveness */
+    }
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .data-table th, .data-table td {
+        padding: 1rem;
+        text-align: left;
+        border-bottom: 1px solid var(--border-color);
+    }
+    .data-table thead th {
+        background-color: #f8f9fa;
+        font-weight: bold;
+    }
+    .data-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+    .data-table tbody tr:hover {
+        background-color: #f1f3f5;
+    }
+    .status-badge {
+        padding: 0.25rem 0.6rem;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: bold;
+        color: white;
+        text-transform: uppercase;
+    }
+    .status-pending { background-color: #6c757d; } /* Gray */
+    .status-qualified { background-color: #28a745; } /* Green */
+    .status-rejected { background-color: #dc3545; } /* Red */
+
+</style>
+
+<div style="display: flex; justify-content: space-between; align-items: center;">
+    <h1>Enquiries</h1>
+    <a href="{% url 'enquiries:enquiry_create' %}">
+        <button>+ Create New Enquiry</button>
+    </a>
+</div>
+
+<div class="table-container" style="margin-top: 2rem;">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Customer</th>
+                <th>Location</th>
+                <th>Project Type</th>
+                <th>Date Received</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for enquiry in enquiries %}
+                <tr>
+                    <td>{{ enquiry.customer.name }}</td>
+                    <td>{{ enquiry.location }}</td>
+                    <td>{{ enquiry.get_project_type_display }}</td>
+                    <td>{{ enquiry.created_at|date:"d M Y" }}</td>
+                    <td>
+                        <span class="status-badge status-{{ enquiry.status|lower }}">{{ enquiry.get_status_display }}</span>
+                    </td>
+                    <td>
+                        <a href="{% url 'enquiries:enquiry_detail' pk=enquiry.pk %}">
+                            <button type="button">View Details</button>
+                        </a>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 2rem;">
+                        No enquiries found. Get started by creating one!
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

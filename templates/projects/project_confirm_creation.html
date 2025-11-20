@@ -1,0 +1,24 @@
+<!-- templates/projects/project_confirm_creation.html -->
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Confirm Project Creation</h1>
+<p>You are about to create a new project from the following quotation:</p>
+
+<div style="border: 1px solid #ccc; padding: 15px;">
+    <h4>Quotation #{{ quotation.quotation_number }}</h4>
+    <p><strong>Type:</strong> {{ quotation.get_quote_type_display }}</p>
+    <p><strong>For:</strong> {{ quotation.enquiry.customer.name }}</p>
+</div>
+
+<p>
+    This will also change the quotation's status to <strong>Accepted</strong>.
+    Are you sure you want to proceed?
+</p>
+
+<form method="post">
+    {% csrf_token %}
+    <a href="{% url 'quotations:quotation_detail' pk=quotation.pk %}"><button type="button">Cancel</button></a>
+    <button type="submit" style="background-color: #28a745; color: white;">Yes, Create Project</button>
+</form>
+{% endblock %}

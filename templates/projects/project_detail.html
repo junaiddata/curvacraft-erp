@@ -1,0 +1,153 @@
+<!-- templates/projects/project_detail.html -->
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}{{ project.title }}{% endblock %}
+
+{% block content %}
+
+<style>
+    /* These styles are for the dashboard layout of this page */
+    .project-dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 2rem;
+    }
+    .card {
+        background-color: #ffffff;
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: var(--shadow-sm);
+        display: flex;
+        flex-direction: column;
+    }
+    .card-header {
+        border-bottom: 1px solid var(--border-light);
+        padding-bottom: 1rem;
+        margin-bottom: 1rem;
+    }
+    .card-header h3 { margin-bottom: 0; }
+    .detail-list dt { font-weight: bold; color: var(--text-secondary); margin-top: 1rem; }
+    .detail-list dd { margin-left: 0; }
+
+    /* Action Panel Styles */
+    .action-panel .action-link {
+        display: flex;
+        align-items: center;
+        padding: 1.25rem 1rem;
+        background: var(--bg-hover);
+        border: 1px solid var(--border-light);
+        border-radius: 8px;
+        text-decoration: none;
+        margin-bottom: 1rem;
+        transition: var(--transition);
+    }
+    .action-panel .action-link:hover {
+        background: white;
+        box-shadow: var(--shadow-sm);
+        transform: translateX(5px);
+        border-color: var(--accent-primary);
+    }
+    .action-icon {
+        font-size: 1.5rem;
+        margin-right: 1.25rem;
+        width: 40px;
+        text-align: center;
+    }
+    .action-text h4 { margin: 0; font-size: 1.1rem; color: var(--primary-dark); }
+    .action-text p { margin: 0; font-size: 0.875rem; color: var(--text-secondary); }
+</style>
+
+<!-- Page Header with Edit Button -->
+<div style="display: flex; justify-content: space-between; align-items: center;">
+    <h1>{{ project.title }}</h1>
+    <div>
+        {% if user.role == 'admin' %}
+            <a href="{% url 'projects:project_edit' pk=project.pk %}" class="btn-secondary">Edit Project</a>
+        {% endif %}
+        <a href="{% if user.role == 'admin' %}{% url 'projects:dashboard' %}{% else %}{% url 'core:home' %}{% endif %}" style="margin-left: 1rem;">&larr; Back to Dashboard</a>
+    </div>
+</div>
+<p class="text-muted">Project Overview & Management Panel</p>
+<hr style="margin-bottom: 2rem;">
+
+<div class="project-dashboard-grid">
+    <!-- Column 1: Core Details and Actions -->
+    <div>
+        <!-- Main Project Details Card -->
+        <div class="card">
+            <div class="card-header"><h3>Project Details</h3></div>
+            <dl class="detail-list">
+                <dt>Status</dt> <dd>{{ project.get_status_display }}</dd>
+                <dt>Customer</dt> <dd>{{ project.customer }}</dd>
+                <dt>Location</dt> <dd>{{ project.location }}</dd>
+                <dt>Assigned SCOs</dt>
+                <dd>
+                    {% for sco in project.assigned_scos.all %}{{ sco.username }}{% if not forloop.last %}, {% endif %}{% empty %}Not Assigned{% endfor %}
+                </dd>
+            </dl>
+        </div>
+
+        <!-- Action Panel Card -->
+        <div class="card action-panel" style="margin-top: 2rem;">
+            <div class="card-header"><h3>Management Areas</h3></div>
+            
+            <!-- We will create a new URL and page for daily tasks -->
+            <a href="{% url 'projects:project_daily_tasks' pk=project.pk %}" class="action-link">
+                <span class="action-icon">📅</span>
+                <div class="action-text">
+                    <h4>Daily Tasks</h4>
+                    <p>View, add, and manage daily progress reports.</p>
+                </div>
+            </a>
+            
+            <a href="{% url 'projects:project_weekly_reports' pk=project.pk %}" class="action-link">
+                <span class="action-icon">🗓️</span>
+                <div class="action-text">
+                    <h4>Weekly Reports</h4>
+                    <p>Manage high-level weekly summaries.</p>
+                </div>
+            </a>
+
+        </div>
+    </div>
+
+    <!-- Column 2: Financials -->
+    <div>
+        <!-- Final Budget Card -->
+        <div class="card">
+            <div class="card-header"><h3>Final Project Budget</h3></div>
+            <div style="text-align: right;">
+                <p>Subtotal: <strong>{{ project.subtotal|floatformat:2|intcomma }}</strong></p>
+                <p>VAT ({{ project.tax_percentage|floatformat:2 }}%): <strong>{{ project.tax_amount|floatformat:2|intcomma }}</strong></p>
+                <hr>
+                <h4>Grand Total (AED): <strong>{{ project.grand_total|floatformat:2|intcomma }}</strong></h4>
+            </div>
+        </div>
+
+        <!-- Invoicing Card -->
+        <div class="card" style="margin-top: 2rem;">
+            <div class="card-header"><h3>Invoicing</h3></div>
+            <dl class="detail-list">
+                <dt>Total Budget</dt> <dd>AED {{ project.grand_total|floatformat:2|intcomma }}</dd>
+                <dt>Total Invoiced</dt> <dd style="color: var(--success);">AED {{ project.total_invoiced|floatformat:2|intcomma }}</dd>
+                <dt>Amount Pending</dt> <dd style="color: var(--warning);">AED {{ project.amount_pending|floatformat:2|intcomma }}</dd>
+            </dl>
+            <hr>
+            <a href="{% url 'invoices:invoice_create' project_pk=project.pk %}">
+                <button type="button" style="width: 100%;">Create New Invoice</button>
+            </a>
+            <h4 style="margin-top: 1.5rem;">Recent Invoices:</h4>
+            <ul style="list-style: none; padding-left: 0;">
+                {% for inv in project.invoices.all|slice:":5" %} <!-- Show latest 5 -->
+                    <li>
+                        <a href="{% url 'invoices:invoice_detail' pk=inv.pk %}">{{ inv.invoice_number }}</a> - <span class="text-muted">{{ inv.get_status_display }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

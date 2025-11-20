@@ -1,0 +1,140 @@
+<!-- templates/invoices/invoice_form.html -->
+{% extends "base.html" %}
+{% block content %}
+{% load humanize %}
+<h1>{{ action }} Invoice</h1>
+
+<h4>For Project: {{ project.title }}</h4>
+
+<style>
+    /* These styles are copied from quotation_form.html for consistency */
+    .item-form-row input[type="checkbox"] { display: none; }
+    .delete-btn { background-color: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
+    .item-form-row.marked-for-deletion { opacity: 0.5; text-decoration: line-through; }
+    .item-form-row.marked-for-deletion input,
+    .item-form-row.marked-for-deletion textarea { pointer-events: none; }
+</style>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <hr>
+        <strong>Tip:</strong> For percentage-based billing, the <strong>Total Project Budget (pre-VAT) of {{ project.subtotal|floatformat:2|intcomma }}</strong> will be used automatically.
+    </p>
+
+    <h3>Line Items</h3>
+    <table id="items-table" style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="background-color: #f4f4f4;">
+                <th style="padding: 8px; text-align: left; width: 45%;">Description</th>
+                <th style="padding: 8px; text-align: left;">Type</th>
+                <th style="padding: 8px; text-align: left;">Qty / %</th>
+                <th style="padding: 8px; text-align: left;">Unit Price / Project Total</th>
+                <th style="padding: 8px; text-align: left;">Action</th>
+            </tr>
+        </thead>
+        <tbody id="item-form-list">
+            {{ formset.management_form }}
+            {% for item_form in formset.forms %}
+                <tr class="item-form-row">
+                    {{ item_form.id }}
+                    <td>{{ item_form.description }}</td>
+                    <td>{{ item_form.quantity_type }}</td>
+                    <td>{{ item_form.quantity }}</td>
+                    <td>{{ item_form.unit_price }}</td>
+                    <td>
+                        {{ item_form.DELETE }}
+                        <button type="button" class="delete-btn">Delete</button>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Hidden template for new rows -->
+    <table style="display:none;">
+        <tbody id="empty-form-template">
+            <tr class="item-form-row">
+                {{ formset.empty_form.id }}
+                <td>{{ formset.empty_form.description }}</td>
+                <td>{{ formset.empty_form.quantity_type }}</td>
+                <td>{{ formset.empty_form.quantity }}</td>
+                <td>{{ formset.empty_form.unit_price }}</td>
+                <td>
+                    {{ formset.empty_form.DELETE }}
+                    <button type="button" class="delete-btn">Delete</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <button type="button" id="add-item-form" style="margin-top: 1rem;">Add Another Item</button>
+    <hr>
+    <button type="submit">Save Invoice</button>
+</form>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const formListBody = document.getElementById('item-form-list');
+    const emptyFormTemplate = document.getElementById('empty-form-template').innerHTML;
+    const totalFormsInput = document.getElementById('id_items-TOTAL_FORMS');
+    const projectBaseAmount = '{{ project_subtotal|floatformat:"-2" }}'; 
+
+    // --- ADD ITEM LOGIC ---
+    document.getElementById('add-item-form').addEventListener('click', function() {
+        let formNum = parseInt(totalFormsInput.value);
+        let newFormHtml = emptyFormTemplate.replace(/__prefix__/g, formNum);
+        formListBody.insertAdjacentHTML('beforeend', newFormHtml);
+        totalFormsInput.value = formNum + 1;
+    });
+
+    // --- EVENT DELEGATION FOR DELETE AND AUTO-FILL ---
+    formListBody.addEventListener('click', function(event) {
+        const target = event.target; // Define target once at the top
+
+        // --- A: Handle Delete Button Click ---
+        if (target && target.classList.contains('delete-btn')) {
+            const row = target.closest('.item-form-row');
+            
+            if (!row.querySelector('input[name$="-id"]')) {
+                if (confirm('Are you sure you want to remove this new item?')) { row.remove(); }
+                return; // Stop further execution
+            }
+            
+            const deleteCheckbox = row.querySelector('input[type="checkbox"]');
+            if (deleteCheckbox) {
+                if (confirm('Are you sure you want to delete this item? This will be permanent upon saving.')) {
+                    deleteCheckbox.checked = true;
+                    row.classList.add('marked-for-deletion');
+                }
+            }
+        }
+        
+        // --- B: Handle Quantity Type Dropdown Change ---
+        // This is now OUTSIDE and SEPARATE from the delete button logic
+        if (target && target.tagName === 'SELECT' && target.name.includes('-quantity_type')) {
+            const row = target.closest('.item-form-row');
+            const unitPriceInput = row.querySelector('input[name$="-unit_price"]');
+
+            if (target.value === 'PERCENTAGE') {
+                unitPriceInput.value = projectBaseAmount;
+                unitPriceInput.readOnly = true;
+            } else {
+                unitPriceInput.value = '';
+                unitPriceInput.readOnly = false;
+            }
+        }
+    });
+    
+    // --- RUN AUTO-FILL LOGIC ON PAGE LOAD for existing forms ---
+    formListBody.querySelectorAll('.item-form-row').forEach(row => {
+        const quantityTypeSelect = row.querySelector('select[name$="-quantity_type"]');
+        const unitPriceInput = row.querySelector('input[name$="-unit_price"]');
+        if (quantityTypeSelect && unitPriceInput && quantityTypeSelect.value === 'PERCENTAGE') {
+            unitPriceInput.readOnly = true;
+            unitPriceInput.value = projectBaseAmount;
+        }
+    });
+});
+</script>
+{% endblock %}

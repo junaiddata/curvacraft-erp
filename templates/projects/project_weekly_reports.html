@@ -1,0 +1,108 @@
+<!-- templates/projects/project_weekly_reports.html -->
+{% extends "base.html" %}
+
+{% block title %}Weekly Reports for {{ project.title }}{% endblock %}
+
+{% block content %}
+
+<style>
+    /* These styles are identical to the project_detail page for consistency */
+    .card {
+        background-color: #ffffff;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .card-header {
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 1rem;
+        margin-bottom: 1rem;
+    }
+    .card-header h3 { margin-bottom: 0; }
+    
+    .task-list-item {
+        display: block;
+        padding: 1rem;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        margin-bottom: 1rem;
+        text-decoration: none;
+        color: var(--primary-color);
+        transition: background-color 0.2s;
+    }
+    .task-list-item:hover {
+        background-color: #f8f9fa;
+    }
+    .task-list-item h4 {
+        margin: 0 0 0.5rem 0;
+    }
+    .task-list-item p {
+        margin: 0;
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+
+    /* Status Badges */
+    .status-badge {
+        padding: 0.25rem 0.6rem;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: bold;
+        color: white;
+        text-transform: uppercase;
+    }
+    .status-pending { background-color: #ffc107; color: #333; }
+    .status-submitted { background-color: #007bff; }
+    .status-reviewed { background-color: #28a745; }
+</style>
+
+<!-- Page Header -->
+<div style="display: flex; justify-content: space-between; align-items: center;">
+    <div>
+        <h1>Weekly Reports</h1>
+        <h4>Project: {{ project.title }}</h4>
+    </div>
+            {% if user.role == 'admin' %}
+            <a href="{% url 'projects:project_detail' pk=project.pk %}" style="color:var(--text-secondary); text-decoration:none; font-weight:600;">
+                &larr; Back to Overview
+            </a>
+        {% else %}
+            <a href="{% url 'core:home' %}" style="color:var(--text-secondary); text-decoration:none; font-weight:600;">
+                &larr; Back to Dashboard
+            </a>
+        {% endif %}
+</div>
+
+<!-- Admin form for adding new weekly tasks -->
+{% if user.role == 'admin' %}
+<div class="card" style="margin-top: 2rem;">
+    <div class="card-header">
+        <h3>Add New Weekly Task</h3>
+    </div>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" style="margin-top: 1rem;">Add Weekly Task</button>
+    </form>
+</div>
+{% endif %}
+
+<h2 style="margin-top: 2rem;">Existing Weekly Reports</h2>
+<div class="task-list">
+    {% for report in weekly_reports %}
+        <a href="{% url 'progress:weekly_progress_detail' pk=report.pk %}" class="task-list-item">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h4>Week of {{ report.week_start_date|date:"d M Y" }}</h4>
+                <span class="status-badge status-{{ report.status|lower }}">{{ report.get_status_display }}</span>
+            </div>
+            <p><strong>For:</strong> {{ report.assigned_to.username }}</p>
+        </a>
+    {% empty %}
+        <div class="card">
+            <p style="text-align: center; margin: 0;">No weekly reports have been created yet.</p>
+        </div>
+    {% endfor %}
+</div>
+
+{% endblock %}

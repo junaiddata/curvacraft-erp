@@ -1,0 +1,85 @@
+<!-- templates/quotations/quotation_detail.html -->
+{% extends "base.html" %}
+{% load humanize %} <!-- Load the humanize template tags for nice number formatting -->
+
+{% block content %}
+<a href="{% url 'quotations:quotation_list' %}">&larr; Back to Dashboard</a>
+
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+    <div>
+        <h1>{{ quotation.get_quote_type_display }} Quotation</h1>
+        <h4>#{{ quotation.quotation_number }} for {{ quotation.enquiry.customer.name }}</h4>
+    </div>
+    <div>
+        <!-- Action Buttons -->
+        <a href="{% url 'quotations:manage_quotation' enquiry_pk=quotation.enquiry.pk quote_type=quotation.quote_type %}"><button type="button">Edit</button></a>
+        <a href="{% url 'quotations:quotation_pdf' pk=quotation.pk %}" target="_blank"><button type="button">Generate PDF</button></a>
+    </div>
+</div>
+
+<!-- STATUS UPDATE & PROJECT CONVERSION -->
+<div style="background: #f8f9fa; padding: 1rem; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <form method="post" style="display:inline-flex; align-items: center; gap: 10px;">
+        {% csrf_token %}
+        {{ status_form.status.label_tag }}
+        {{ status_form.status }}
+        <button type="submit">Update Status</button>
+    </form>
+    
+    {% if quotation.quote_type == 'DESIGN' %}
+        {% if not quotation.project %}
+            <a href="{% url 'projects:create_project' quotation_pk=quotation.pk %}">
+                <button style="background-color: var(--success-color);">Convert to Project</button>
+            </a>
+        {% else %}
+            <a href="{% url 'projects:project_detail' pk=quotation.project.pk %}">
+                <button>View Linked Project</button>
+            </a>
+        {% endif %}
+    {% endif %}
+</div>
+
+<!-- ITEMS TABLE -->
+<table style="width:100%; border-collapse: collapse;">
+    <thead style="background-color: #f4f4f4;">
+        <tr>
+            <th style="padding: 10px; text-align: left;">S/N</th>
+            <th style="padding: 10px; text-align: left;">Description</th>
+            <th style="padding: 10px; text-align: right;">Qty</th>
+            <th style="padding: 10px; text-align: left;">Unit</th>
+            <th style="padding: 10px; text-align: right;">Unit Price</th>
+            <th style="padding: 10px; text-align: right;">Line Total</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in quotation.items.all %}
+            <tr style="border-bottom: 1px solid #dee2e6;">
+                <td style="padding: 10px;">{{ forloop.counter }}</td>
+                <td style="padding: 10px;">{{ item.description|linebreaksbr }}</td>
+                <td style="padding: 10px; text-align: right;">{{ item.quantity|floatformat:2 }}</td>
+                <td style="padding: 10px;">{{ item.unit }}</td>
+                <td style="padding: 10px; text-align: right;">{{ item.unit_price|floatformat:2|intcomma }}</td>
+                <td style="padding: 10px; text-align: right;">{{ item.total_amount|floatformat:2|intcomma }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- TOTALS SECTION -->
+<div style="width: 40%; margin-left: auto; margin-top: 2rem; text-align: right;">
+    <table style="width: 100%;">
+        <tr>
+            <td style="padding: 8px;"><strong>Subtotal</strong></td>
+            <td style="padding: 8px;">{{ quotation.subtotal|floatformat:2|intcomma }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 8px;"><strong>VAT ({{ quotation.tax_percentage|floatformat:2 }}%)</strong></td>
+            <td style="padding: 8px;">{{ quotation.tax_amount|floatformat:2|intcomma }}</td>
+        </tr>
+        <tr style="font-size: 1.2rem; border-top: 2px solid #333;">
+            <td style="padding: 8px;"><strong>Grand Total (AED)</strong></td>
+            <td style="padding: 8px;"><strong>{{ quotation.grand_total|floatformat:2|intcomma }}</strong></td>
+        </tr>
+    </table>
+</div>
+{% endblock %}

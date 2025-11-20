@@ -1,0 +1,27 @@
+# Environment variables - VERY IMPORTANT!
+.env
+
+# Django files
+db.sqlite3
+*.log
+local_settings.py
+
+# Python virtual environment
+venv/
+/venv/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Media files (user-uploaded content)
+/media/
+
+# Static files (if you collect them)
+/static_root/
+/staticfiles/
+
+# IDE / Editor folders
+.idea/
+.vscode/

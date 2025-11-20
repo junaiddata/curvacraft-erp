@@ -1,0 +1,107 @@
+<!-- templates/projects/project_list.html -->
+{% extends "base.html" %}
+
+{% block title %}All Projects{% endblock %}
+
+{% block content %}
+
+<style>
+    /* These styles can be moved to base.html if you use them on more pages */
+    .table-container {
+        background-color: #ffffff;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 0;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        overflow-x: auto;
+    }
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .data-table th, .data-table td {
+        padding: 1rem;
+        text-align: left;
+        border-bottom: 1px solid var(--border-color);
+    }
+    .data-table thead th {
+        background-color: #f8f9fa;
+        font-weight: bold;
+    }
+    .data-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+    .data-table tbody tr:hover {
+        background-color: #f1f3f5;
+    }
+    .status-badge {
+        padding: 0.25rem 0.6rem;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: bold;
+        color: white;
+        text-transform: uppercase;
+        
+        /* --- THIS IS THE FIX --- */
+        /* Prevents the text inside the badge from breaking into two lines */
+        white-space: nowrap; 
+    }
+    .status-not_started { background-color: #6c757d; } /* Gray */
+    .status-in_progress { background-color: #007bff; } /* Blue */
+    .status-on_hold { background-color: #ffc107; color: #333; } /* Yellow */
+    .status-completed { background-color: #28a745; } /* Green */
+    .status-cancelled { background-color: #dc3545; } /* Red */
+
+</style>
+
+<div style="display: flex; justify-content: space-between; align-items: center;">
+    <h1>All Projects</h1>
+    <!-- You can add a "Create Project" button here later if you allow manual creation -->
+</div>
+
+<div class="table-container" style="margin-top: 2rem;">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Project Title</th>
+                <th>Customer</th>
+                <th>Location</th>
+                <th>Assigned SCOs</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for project in projects %}
+                <tr>
+                    <td>{{ project.title }}</td>
+                    <td>{{ project.customer }}</td>
+                    <td>{{ project.location }}</td>
+                    <td>
+                        {% for sco in project.assigned_scos.all %}
+                            {{ sco.username }}{% if not forloop.last %}, {% endif %}
+                        {% empty %}
+                            <span style="color: #888;">Not Assigned</span>
+                        {% endfor %}
+                    </td>
+                    <td>
+                        <span class="status-badge status-{{ project.status|lower }}">{{ project.get_status_display }}</span>
+                    </td>
+                    <td>
+                        <a href="{% url 'projects:project_detail' pk=project.pk %}">
+                            <button type="button">View Details</button>
+                        </a>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 2rem;">
+                        No projects have been created yet.
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

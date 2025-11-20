@@ -1,0 +1,27 @@
+<!-- templates/registration/login.html -->
+{% extends "base_standalone.html" %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <h1 class="auth-brand">
+            <img src="https://curvacraft.com/wp-content/uploads/2024/10/Curvacraft-logo-1024x255.webp" alt="Curvacraft Logo"   class="logo-inverted">
+        </h1>
+        <h2 class="auth-header">Studio Login</h2>
+        
+        {% if form.errors %}
+            <p style="color: var(--error-color);">Your username and password didn't match. Please try again.</p>
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <div class="form-actions">
+                <button type="submit">Login</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

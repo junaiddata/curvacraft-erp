@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add a new SCO</title>
+    <style>/* Basic styling for the popup */ body {font-family: sans-serif; padding: 1rem;} </style>
+</head>
+<body>
+    <h2>Add a new SCO</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Create SCO</button>
+    </form>
+</body>
+</html>

@@ -1,0 +1,143 @@
+<!-- templates/enquiries/enquiry_detail.html -->
+{% extends "base.html" %}
+{% load humanize %}
+{% block content %}
+
+<style>
+    .enquiry-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr; /* 2/3 for details, 1/3 for actions */
+        gap: 2rem;
+    }
+    .card {
+        background-color: #ffffff;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .card-header {
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 1rem;
+        margin-bottom: 1rem;
+    }
+    .card-header h3 {
+        margin-bottom: 0;
+    }
+    .detail-grid {
+        display: grid;
+        grid-template-columns: 150px 1fr;
+        gap: 1rem;
+    }
+    .detail-grid dt { /* dt is the label */
+        font-weight: bold;
+        color: #6c757d;
+    }
+    .detail-grid dd { /* dd is the value */
+        margin: 0;
+    }
+    .sidebar-actions .action-button {
+        display: block;
+        width: 100%;
+        text-align: center;
+        margin-bottom: 1rem;
+        padding: 0.75rem;
+    }
+    .actions-card .action-button:hover {
+        opacity: 0.85;
+    }
+
+    @media (max-width: 992px) {
+        .enquiry-grid {
+            grid-template-columns: 1fr; /* Stack columns on smaller screens */
+        }
+    }
+</style>
+
+<div style="display: flex; justify-content: space-between; align-items: center;">
+    <h1>Enquiry Details</h1>
+    <a href="{% url 'enquiries:enquiry_list' %}">&larr; Back to Enquiries List</a>
+</div>
+
+<div class="enquiry-grid">
+
+    <!-- Left Column: Enquiry Details -->
+    <div class="main-details">
+        <div class="card">
+            <div class="card-header">
+                <h3>Project Information</h3>
+            </div>
+            <dl class="detail-grid">
+                <dt>Project Type</dt>
+                <dd>{{ enquiry.get_project_type_display }}</dd>
+
+                <dt>Location</dt>
+                <dd>{{ enquiry.location }}</dd>
+
+                <dt>Budget</dt>
+                <dd>AED {{ enquiry.budget|floatformat:2|intcomma }}</dd>
+
+                <dt>Timeframe</dt>
+                <dd>{{ enquiry.timeframe }}</dd>
+            </dl>
+        </div>
+
+        <div class="card" style="margin-top: 2rem;">
+            <div class="card-header">
+                <h3>Customer Details</h3>
+            </div>
+             <dl class="detail-grid">
+                <dt>Name</dt>
+                <dd>{{ enquiry.customer.name }}</dd>
+
+                <dt>Email</dt>
+                <dd>{{ enquiry.customer.email }}</dd>
+
+                <dt>Phone</dt>
+                <dd>{{ enquiry.customer.phone_number|default:"Not provided" }}</dd>
+
+                <dt>Address</dt>
+                <dd>{{ enquiry.customer.address|default:"Not provided"|linebreaksbr }}</dd>
+            </dl>
+        </div>
+        
+        <div class="card" style="margin-top: 2rem;">
+            <div class="card-header">
+                <h3>Scope of Work</h3>
+            </div>
+            <p>{{ enquiry.scope|linebreaksbr }}</p>
+        </div>
+    </div>
+
+    <!-- Right Column: Actions -->
+    <div class="sidebar-actions">
+        <div class="card actions-card">
+            <div class="card-header">
+                <h3>Actions</h3>
+            </div>
+            
+            <!-- STATUS UPDATE FORM -->
+            <form method="post">
+                {% csrf_token %}
+                <label for="{{ status_form.status.id_for_label }}"><strong>Enquiry Status</strong></label>
+                {{ status_form.status }}
+                <!-- Use a standard submit button INSIDE the form -->
+                <button type="submit" style="width: 100%; margin-top: 10px;">Update Status</button>
+            </form>
+            <p>Current Status: <strong>{{ enquiry.get_status_display }}</strong></p>
+            <hr>
+            
+            <!-- MANAGE QUOTATIONS -->
+            <h4>Manage Quotations</h4>
+            <a href="{% url 'quotations:manage_quotation' enquiry_pk=enquiry.pk quote_type='DESIGN' %}">
+                <button type="button" class="action-button">Manage Design Quote</button>
+            </a>
+            <a href="{% url 'quotations:manage_quotation' enquiry_pk=enquiry.pk quote_type='FITOUT' %}">
+                <button type="button" class="action-button">Manage Fitout Quote</button>
+            </a>
+
+        </div>
+    </div>
+
+</div>
+{% endblock %}

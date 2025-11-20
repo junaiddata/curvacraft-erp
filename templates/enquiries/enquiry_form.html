@@ -1,0 +1,74 @@
+<!-- templates/enquiries/enquiry_form.html -->
+{% extends "base.html" %}
+
+{% block content %}
+
+<style>
+    .form-container {
+        max-width: 800px; /* Constrain the width for better readability */
+        margin: 0 auto;   /* Center the form on the page */
+    }
+    .card {
+        background-color: #ffffff;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        margin-bottom: 2rem;
+    }
+    .card-header {
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 1rem;
+        margin-bottom: 1rem;
+    }
+    .card-header h3 {
+        margin-bottom: 0;
+    }
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end; /* Align buttons to the right */
+    }
+</style>
+
+<div class="form-container">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <!-- The 'action' variable will be passed from the view for edit pages later -->
+        <h1>{{ action|default:"Create" }} Enquiry</h1>
+        <a href="{% url 'enquiries:enquiry_list' %}">&larr; Back to Enquiries List</a>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <!-- Customer Details Card -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Customer Details</h3>
+            </div>
+            <p>
+                If a customer with this email already exists, their information will be linked automatically.
+            </p>
+            {{ customer_form.as_p }}
+        </div>
+
+        <!-- Project Details Card -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Project Details</h3>
+            </div>
+            {{ enquiry_form.as_p }}
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+            <a href="{% url 'enquiries:enquiry_list' %}">
+                <button type="button">Cancel</button>
+            </a>
+            <button type="submit" style="background-color: var(--success-color);">Save Enquiry</button>
+        </div>
+
+    </form>
+</div>
+
+{% endblock %}

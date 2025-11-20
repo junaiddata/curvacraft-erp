@@ -1,0 +1,111 @@
+<!-- templates/projects/sco_dashboard.html -->
+{% extends "base.html" %}
+
+{% block title %}My Dashboard{% endblock %}
+
+{% block content %}
+
+<style>
+    /* Card Grid Layout */
+    .project-grid {
+        display: grid;
+        /* Creates responsive columns: 1 on small screens, 2 on medium, 3 on large */
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 1.5rem;
+    }
+    .project-card {
+        background-color: #ffffff;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        display: flex;
+        flex-direction: column; /* Stack content vertically */
+    }
+    .project-card-header {
+        padding: 1.5rem 1.5rem 1rem 1.5rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+    .project-card-header h3 {
+        margin: 0;
+        font-size: 1.25rem;
+    }
+    .project-card-body {
+        padding: 1.5rem;
+        flex-grow: 1; /* Allows this section to grow and fill available space */
+    }
+    .project-card-details {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    .project-card-details li {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+    }
+    .project-card-details li strong {
+        color: #6c757d;
+    }
+    .project-card-footer {
+        padding: 1.5rem;
+        background-color: #f8f9fa;
+        border-top: 1px solid var(--border-color);
+        text-align: right;
+    }
+
+    /* Status Badges - can be moved to base.html if reused often */
+    .status-badge {
+        padding: 0.25rem 0.6rem;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: bold;
+        color: white;
+        text-transform: uppercase;
+    }
+    .status-not_started { background-color: #6c757d; }
+    .status-in_progress { background-color: #007bff; }
+    .status-on_hold { background-color: #ffc107; color: #333; }
+    .status-completed { background-color: #28a745; }
+    .status-cancelled { background-color: #dc3545; }
+</style>
+
+<h1>My Assigned Projects</h1>
+<p>Here are all the projects currently assigned to you. Select a project to view details and update daily progress.</p>
+<hr style="margin-bottom: 2rem;">
+
+<div class="project-grid">
+    {% for project in projects %}
+        <div class="project-card">
+            <div class="project-card-header">
+                <h3>{{ project.title }}</h3>
+            </div>
+            <div class="project-card-body">
+                <ul class="project-card-details">
+                    <li>
+                        <strong>Customer:</strong>
+                        <span>{{ project.customer }}</span>
+                    </li>
+                    <li>
+                        <strong>Location:</strong>
+                        <span>{{ project.location }}</span>
+                    </li>
+                    <li>
+                        <strong>Status:</strong>
+                        <span><span class="status-badge status-{{ project.status|lower }}">{{ project.get_status_display }}</span></span>
+                    </li>
+                </ul>
+            </div>
+            <div class="project-card-footer">
+                <a href="{% url 'projects:project_daily_tasks' pk=project.pk %}">
+                    <button>View Project & Update Progress</button>
+                </a>
+            </div>
+        </div>
+    {% empty %}
+        <div class="card" style="grid-column: 1 / -1;"> <!-- Make the card span all columns -->
+            <p style="text-align: center; margin: 0;">You have no projects assigned to you.</p>
+        </div>
+    {% endfor %}
+</div>
+
+{% endblock %}
