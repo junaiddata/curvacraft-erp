@@ -24,9 +24,8 @@ class DailyTaskCreationForm(forms.ModelForm):
         project = kwargs.pop('project', None)
         super().__init__(*args, **kwargs)
         if project:
-            self.fields['assigned_to'].queryset = project.assigned_scos.all()
-            # Set a nice empty label
-            self.fields['assigned_to'].empty_label = "All Assigned SCOs"
+            self.fields['assigned_to'].queryset = project.assigned_scos.filter(is_active=True)
+            self.fields['assigned_to'].empty_label = "All Active SCOs"
 
 class SCOProgressUpdateForm(forms.ModelForm):
     class Meta:
@@ -77,8 +76,8 @@ class WeeklyTaskCreationForm(forms.ModelForm):
         project = kwargs.pop('project', None)
         super().__init__(*args, **kwargs)
         if project:
-            self.fields['assigned_to'].queryset = project.assigned_scos.all()
-            self.fields['assigned_to'].empty_label = "All Assigned SCOs"
+            self.fields['assigned_to'].queryset = project.assigned_scos.filter(is_active=True)
+            self.fields['assigned_to'].empty_label = "All Active SCOs"
 
             
 class SCOWeeklyUpdateForm(forms.ModelForm):

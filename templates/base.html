@@ -760,6 +760,13 @@
                                 Quotations
                             </a>
                         </li>
+                        <li class="sidebar-divider"></li>
+                        <li>
+                            <a href="{% url 'users:manage_scos' %}" class="{% if 'manage_scos' in request.resolver_match.url_name %}active{% endif %}">
+                                Manage SCOs
+                            </a>
+                        </li>
+
                         
                         {% if user.is_staff %}
                         <li class="sidebar-divider"></li>

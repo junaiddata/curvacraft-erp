@@ -14,4 +14,5 @@ urlpatterns = [
     # The URL to edit an existing project
     path('project/<int:pk>/edit/', views.project_edit, name='project_edit'),
     path('project/<int:pk>/daily/', views.project_daily_tasks, name='project_daily_tasks'),
+    path('ajax/get-scos/', views.get_scos_as_html, name='ajax_get_scos'),
 ]

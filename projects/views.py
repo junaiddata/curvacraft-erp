@@ -267,3 +267,15 @@ def project_daily_tasks(request, pk):
         'progress_reports': progress_reports
     }
     return render(request, 'projects/project_daily_tasks.html', context)
+
+
+# --- ADD THIS NEW VIEW ---
+@login_required
+def get_scos_as_html(request):
+    """
+    An API-like view that returns a rendered HTML snippet of the
+    'assigned_scos' field from a fresh ProjectForm.
+    """
+    # Create a fresh, unbound form to get the latest choices
+    form = ProjectForm() 
+    return render(request, 'projects/partials/sco_checkbox_list.html', {'form': form})

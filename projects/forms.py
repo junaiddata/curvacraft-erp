@@ -15,7 +15,7 @@ class ProjectForm(forms.ModelForm):
         # Use the better widget for ManyToMany fields
         self.fields['assigned_scos'].widget = forms.CheckboxSelectMultiple()
         # We can also limit the queryset again here if we want to be extra safe
-        self.fields['assigned_scos'].queryset = self.fields['assigned_scos'].queryset.filter(role='sco')
+        self.fields['assigned_scos'].queryset = self.fields['assigned_scos'].queryset.filter(role='sco', is_active=True)
 
 class ProjectItemForm(forms.ModelForm):
     class Meta:

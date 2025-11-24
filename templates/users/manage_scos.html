@@ -1,0 +1,63 @@
+<!-- templates/users/manage_scos.html -->
+{% extends "base.html" %}
+{% block content %}
+<style>
+        .status-badge {
+        padding: 0.25rem 0.6rem;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: bold;
+        color: white;
+        text-transform: uppercase;
+        
+        /* --- THIS IS THE FIX --- */
+        /* Prevents the text inside the badge from breaking into two lines */
+        white-space: nowrap; 
+    }
+    .status-active { background-color: var(--success); }
+    .status-inactive { background-color: var(--text-muted); }
+    .btn-small { padding: 0.25rem 0.75rem; font-size: 0.8rem; }
+</style>
+
+<div style="display: flex; justify-content: space-between; align-items: center;">
+    <h1>Manage Site Coordination Officers (SCOs)</h1>
+</div>
+
+<div class="table-container" style="margin-top: 2rem;">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Username</th>
+
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sco in scos %}
+                <tr>
+                    <td>{{ sco.username }}</td>
+
+                    <td>
+                        {% if sco.is_active %}
+                            <span class="status-badge status-active">Active</span>
+                        {% else %}
+                            <span class="status-badge status-inactive">Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <form method="post" action="{% url 'users:toggle_sco_status' user_pk=sco.pk %}" style="margin: 0;">
+                            {% csrf_token %}
+                            {% if sco.is_active %}
+                                <button type="submit" class="btn-secondary btn-small">Deactivate</button>
+                            {% else %}
+                                <button type="submit" class="btn-small" style="background: var(--success);">Activate</button>
+                            {% endif %}
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
