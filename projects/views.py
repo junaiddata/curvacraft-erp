@@ -35,7 +35,7 @@ def dashboard(request):
 
 
 @login_required
-
+@admin_required
 def project_detail(request, pk):
     project = get_object_or_404(Project, pk=pk)
     

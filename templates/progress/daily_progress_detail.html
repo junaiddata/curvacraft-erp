@@ -56,7 +56,15 @@
             <h2>Daily Report</h2>
             <h4>{{ report.project.title }} | {{ report.date|date:"l, d M Y" }}</h4>
         </div>
-        <a href="{% url 'projects:project_detail' pk=report.project.pk %}">&larr; Back to Project</a>
+                {% if user.role == 'admin' %}
+            <a href="{% url 'projects:project_detail' pk=project.pk %}" style="color:var(--text-secondary); text-decoration:none; font-weight:600;">
+                &larr; Back to Overview
+            </a>
+        {% else %}
+            <a href="{% url 'core:home' %}" style="color:var(--text-secondary); text-decoration:none; font-weight:600;">
+                &larr; Back to Dashboard
+            </a>
+        {% endif %}
     </div>
 
     <p>
