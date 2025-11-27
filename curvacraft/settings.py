@@ -33,7 +33,7 @@ SECRET_KEY = env('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env('DEBUG')
 
-ALLOWED_HOSTS = ['192.168.0.43','127.0.0.1','31.97.75.196','crm.curvacraft.com','curvacraft.com']
+ALLOWED_HOSTS = ['192.168.0.43','127.0.0.1','31.97.75.196','crm.curvacraft.com','curvacraft.com','localhost']
 
 
 # Application definition
@@ -55,7 +55,9 @@ INSTALLED_APPS = [
     'projects',
     'progress',
     'core',
-    'invoices'
+    'invoices',
+    'accounts',
+
 ]
 
 MIDDLEWARE = [

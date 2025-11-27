@@ -5,6 +5,9 @@ from django.utils.translation import gettext_lazy as _
 from quotations.models import Quotation
 from users.models import User # Import our custom User model
 from decimal import Decimal
+from django.db.models import Sum
+
+
 class Project(models.Model):
     """
     Represents an active project, created from an accepted quotation.
@@ -69,13 +72,54 @@ class Project(models.Model):
         return self.subtotal + self.tax_amount
     
     @property
-    def total_invoiced(self):
-        # Sum the grand_total of all invoices that are NOT void
-        return sum(inv.grand_total for inv in self.invoices.exclude(status='VOID'))
+    def total_invoiced_subtotal(self):
+        """Calculates the SUM of the SUBTOTALS (pre-VAT) of all non-voided invoices."""
+        valid_invoices = self.invoices.exclude(status='VOID')
+        return sum(inv.subtotal for inv in valid_invoices) or Decimal(0)
 
     @property
-    def amount_pending(self):
-        return self.grand_total - self.total_invoiced
+    def budget_remaining_to_invoice_subtotal(self):
+        """
+        Calculates the pre-VAT value of the project that has not yet been invoiced.
+        This is the most important metric for project management.
+        """
+        # Compares VAT-exclusive with VAT-exclusive
+        return self.subtotal - self.total_invoiced_subtotal
+
+    @property
+    def budget_remaining_to_invoice_grand(self):
+        """
+        Calculates the VAT-inclusive value of the project that has not yet been invoiced.
+        """
+        # Compares VAT-inclusive with VAT-inclusive
+        return self.grand_total - self.total_invoiced_grand
+
+    @property
+    def total_invoiced_grand(self):
+        """Calculates the SUM of the GRAND TOTALS (incl. VAT) of all non-voided invoices."""
+        valid_invoices = self.invoices.exclude(status='VOID')
+        return sum(inv.grand_total for inv in valid_invoices) or Decimal(0)
+
+    @property
+    def total_received(self):
+        """Calculates the total amount of actual money received across all payments."""
+        total = self.invoices.exclude(status='VOID').aggregate(total=Sum('payments__amount'))['total']
+        return total or Decimal(0)
+        
+    @property
+    def total_credited(self):
+        """Calculates the total amount credited across all credit notes."""
+        total = self.invoices.exclude(status='VOID').aggregate(total=Sum('credit_notes__amount'))['total']
+        return total or Decimal(0)
+
+    @property
+    def accounts_receivable(self):
+        """
+        THE CORRECT "AMOUNT PENDING". This is the actual cash you are waiting for.
+        Calculated as: Total Billed (incl. VAT) - Total Payments Received - Total Credit Notes Issued.
+        """
+        # This is the corrected, final formula.
+        return self.total_invoiced_grand - self.total_received - self.total_credited
     
 
 # --- ADD THIS ENTIRE NEW MODEL ---

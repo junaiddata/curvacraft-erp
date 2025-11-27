@@ -1,0 +1,23 @@
+<!-- templates/accounts/payment_form.html -->
+{% extends "base.html" %}
+{% load humanize %}
+{% block content %}
+<div style="max-width: 700px; margin: 0 auto;">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h1>Record Payment</h1>
+        <a href="{% url 'invoices:invoice_detail' pk=invoice.pk %}">&larr; Back to Invoice</a>
+    </div>
+    <h4>For Invoice #{{ invoice.invoice_number }}</h4>
+    <p class="text-muted">Total amount due: <strong>AED {{ invoice.amount_due|intcomma }}</strong></p>
+
+    <div class="card" style="margin-top: 2rem;">
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <div style="text-align: right; margin-top: 1.5rem;">
+                <button type="submit">Save Payment</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

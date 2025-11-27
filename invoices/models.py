@@ -3,6 +3,7 @@ from django.db import models
 from django.utils import timezone
 from decimal import Decimal
 from projects.models import Project
+from django.db.models import Sum
 
 class Invoice(models.Model):
     class InvoiceStatus(models.TextChoices):
@@ -43,6 +44,36 @@ class Invoice(models.Model):
     def grand_total(self):
         return self.subtotal + self.tax_amount
 
+    @property
+    def total_paid(self):
+        """Calculates the sum of all payments for this invoice."""
+        # .aggregate(Sum('amount')) is a very efficient way to sum
+        total = self.payments.aggregate(total_paid=Sum('amount'))['total_paid']
+        return total or Decimal(0)
+
+    @property
+    def total_credited(self):
+        """Calculates the sum of all credit notes for this invoice."""
+        total = self.credit_notes.aggregate(total_credited=Sum('amount'))['total_credited']
+        return total or Decimal(0)
+
+    @property
+    def amount_due(self):
+        """Calculates the final amount due after payments and credits."""
+        return self.grand_total - self.total_paid - self.total_credited
+
+    # We can also update the status automatically in a post_save signal later
+    # For now, this property shows the real-time status
+    @property
+    def real_time_status(self):
+        if self.status == 'VOID':
+            return 'Void'
+        if self.amount_due <= 0:
+            return 'Paid'
+        if self.total_paid > 0:
+            return 'Partially Paid'
+        return self.get_status_display()
+    
     def __str__(self):
         return self.invoice_number
 

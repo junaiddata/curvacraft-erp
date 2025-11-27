@@ -126,23 +126,59 @@
             </div>
         </div>
 
-        <!-- Invoicing Card -->
         <div class="card" style="margin-top: 2rem;">
-            <div class="card-header"><h3>Invoicing</h3></div>
+            <div class="card-header"><h3>Invoicing Summary</h3></div>
+            
             <dl class="detail-list">
-                <dt>Total Budget</dt> <dd>AED {{ project.grand_total|floatformat:2|intcomma }}</dd>
-                <dt>Total Invoiced</dt> <dd style="color: var(--success);">AED {{ project.total_invoiced|floatformat:2|intcomma }}</dd>
-                <dt>Amount Pending</dt> <dd style="color: var(--warning);">AED {{ project.amount_pending|floatformat:2|intcomma }}</dd>
+                <!-- Section 1: Project Budget Overview -->
+                <dt>Project Budget (excl. VAT)</dt>
+                <dd>AED {{ project.subtotal|floatformat:2|intcomma }}</dd>
+                
+                <dt>VAT on Budget ({{ project.tax_percentage|floatformat:2 }}%)</dt>
+                <dd>AED {{ project.tax_amount|floatformat:2|intcomma }}</dd>
+                
+                <dt>Total Project Budget (incl. VAT)</dt>
+                <dd style="font-weight: bold;">AED {{ project.grand_total|floatformat:2|intcomma }}</dd>
+                
+                <hr style="margin: 1rem 0; border-color: var(--border-light);">
+
+                <!-- Section 2: Invoicing Progress -->
+                <dt>Total Billed (incl. VAT)</dt>
+                <dd>AED {{ project.total_invoiced_grand|floatformat:2|intcomma }}</dd>
+                
+                <dt>Budget Remaining to Invoice (incl. VAT)</dt>
+                <dd style="color: var(--primary-medium);">
+                    AED {{ project.budget_remaining_to_invoice_grand|floatformat:2|intcomma }}
+                </dd>
+
+                <hr style="margin: 1rem 0; border-color: var(--border-light);">
+
+                <!-- Section 3: Accounts Receivable -->
+                <dt>Total Received (Payments)</dt>
+                <dd style="color: var(--success);">
+                    AED {{ project.total_received|floatformat:2|intcomma }}
+                </dd>
+                <dt>Total Credited (Credit Notes)</dt>
+                <dd style="color: var(--danger);">
+                    AED {{ project.total_credited|floatformat:2|intcomma }} 
+                </dd>
+
+                <dt>Accounts Receivable</dt>
+                <dd style="color: var(--warning); font-weight: bold;">
+                    AED {{ project.accounts_receivable|floatformat:2|intcomma }}
+                </dd>
             </dl>
+            
             <hr>
             <a href="{% url 'invoices:invoice_create' project_pk=project.pk %}">
                 <button type="button" style="width: 100%;">Create New Invoice</button>
             </a>
             <h4 style="margin-top: 1.5rem;">Recent Invoices:</h4>
             <ul style="list-style: none; padding-left: 0;">
-                {% for inv in project.invoices.all|slice:":5" %} <!-- Show latest 5 -->
+                {% for inv in project.invoices.all|slice:":5" %}
                     <li>
-                        <a href="{% url 'invoices:invoice_detail' pk=inv.pk %}">{{ inv.invoice_number }}</a> - <span class="text-muted">{{ inv.get_status_display }}</span>
+                        <a href="{% url 'invoices:invoice_detail' pk=inv.pk %}">{{ inv.invoice_number }}</a> - 
+                        <span class="text-muted">{{ inv.real_time_status }}</span>
                     </li>
                 {% endfor %}
             </ul>
