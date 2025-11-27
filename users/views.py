@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .forms import SCOCreationForm
 from .models import User # Make sure User is imported
-from users.decorators import admin_required # Import our admin decorator
+from users.decorators import admin_required,role_required # Import our admin decorator
 
 @login_required
 def sco_add_popup(request):
@@ -28,7 +28,7 @@ def sco_add_popup(request):
 
 # --- ADD THIS NEW VIEW for the list page ---
 @login_required
-@admin_required
+@role_required('admin')
 def manage_scos_list(request):
     # Get all users with the role of 'sco', order by their active status then username
     all_scos = User.objects.filter(role='sco').order_by('-is_active', 'username')
@@ -37,7 +37,7 @@ def manage_scos_list(request):
 
 # --- ADD THIS NEW VIEW for the toggle action ---
 @login_required
-@admin_required
+@role_required('admin')
 def toggle_sco_status(request, user_pk):
     # Ensure this is a POST request for security
     if request.method == 'POST':

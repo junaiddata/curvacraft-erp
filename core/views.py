@@ -1,18 +1,23 @@
 # core/views.py
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from projects.models import Project
 from enquiries.models import Enquiry
 from quotations.models import Quotation
 from progress.models import DailyProgress
+
+
+
 
 def home_view(request):
     # If the user is not logged in, show a simple landing page.
     if not request.user.is_authenticated:
         return render(request, 'core/landing_page.html')
 
-    # If the user is an ADMIN, gather stats and show the ERP dashboard.
+    # --- THIS IS THE CORRECTED LOGIC ---
+
+    # 1. Handle ADMIN role
     if request.user.role == 'admin':
-        # --- Gather Statistics for the Dashboard ---
+        # Gather stats and show the ERP dashboard for admins.
         active_projects_count = Project.objects.filter(status='IN_PROGRESS').count()
         pending_enquiries_count = Enquiry.objects.filter(status='PENDING').count()
         quotes_awaiting_acceptance = Quotation.objects.filter(status='SENT').count()
@@ -26,11 +31,16 @@ def home_view(request):
         }
         return render(request, 'core/admin_dashboard.html', context)
     
-    # If the user is an SCO, show their assigned projects.
+    # 2. Handle STAFF role
+    elif request.user.role == 'staff':
+        # For staff, redirect them directly to the page they care about most.
+        return redirect('enquiries:enquiry_list')
+    
+    # 3. Handle SCO role (this is now the final 'else')
     else:
+        # For SCOs, show their assigned projects.
         assigned_projects = Project.objects.filter(assigned_scos=request.user).order_by('status')
         context = {
             'projects': assigned_projects
         }
-        # We can reuse the project dashboard template for this
         return render(request, 'projects/sco_dashboard.html', context)

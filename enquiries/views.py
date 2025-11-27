@@ -5,17 +5,17 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .models import Enquiry, Customer
 from .forms import EnquiryForm, CustomerForm, EnquiryStatusForm
-from users.decorators import admin_required # Import the decorator
+from users.decorators import admin_required,role_required# Import the decorator
 
 
 
-@admin_required
+@role_required('admin','staff')
 @login_required
 def enquiry_list(request):
     enquiries = Enquiry.objects.all().order_by('-created_at')
     return render(request, 'enquiries/enquiry_list.html', {'enquiries': enquiries})
 
-@admin_required
+@role_required('admin','staff')
 @login_required
 def enquiry_create(request):
     if request.method == 'POST':
@@ -42,8 +42,8 @@ def enquiry_create(request):
     return render(request, 'enquiries/enquiry_form.html', context)
 
 
-@login_required
-@admin_required
+@role_required('admin','staff')
+
 def enquiry_detail(request, pk):
     enquiry = get_object_or_404(Enquiry, pk=pk)
     
@@ -66,7 +66,7 @@ def enquiry_detail(request, pk):
         'status_form': status_form  # Pass the form into the template
     }
     return render(request, 'enquiries/enquiry_detail.html', context)
-@admin_required
+@role_required('admin')
 @login_required
 def enquiry_edit(request, pk):
     pass # To be implemented: Edit enquiry functionality

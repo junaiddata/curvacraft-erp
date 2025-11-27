@@ -1,14 +1,20 @@
 # users/decorators.py
-from django.contrib.auth.decorators import user_passes_test
 from django.core.exceptions import PermissionDenied
 
-def admin_required(function):
+def role_required(*roles):
     """
-    Decorator to ensure the user is an admin.
-    If not, it raises a PermissionDenied exception.
+    A decorator that checks if a user has one of the specified roles.
+    Usage: @role_required('admin', 'staff')
     """
-    def check_admin(user):
-        if not user.is_authenticated or user.role != 'admin':
-            raise PermissionDenied
-        return True
-    return user_passes_test(check_admin)(function)
+    def decorator(function):
+        def wrapper(request, *args, **kwargs):
+            if request.user.is_authenticated and request.user.role in roles:
+                return function(request, *args, **kwargs)
+            else:
+                # Redirect to home or show a permission denied error
+                raise PermissionDenied
+        return wrapper
+    return decorator
+
+# We can keep a simple one for just admins if we want
+admin_required = role_required('admin')

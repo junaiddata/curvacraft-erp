@@ -13,7 +13,7 @@ from progress.models import WeeklyProgress # Add this import
 import datetime # Add this import
 from quotations.models import Quotation # Import the Quotation model
 from .forms import ProjectForm # Import our new form
-from users.decorators import admin_required # Import the decorator
+from users.decorators import admin_required,role_required # Import the decorator
 
 
 @login_required
@@ -35,7 +35,7 @@ def dashboard(request):
 
 
 @login_required
-@admin_required
+@role_required('admin')
 def project_detail(request, pk):
     project = get_object_or_404(Project, pk=pk)
     
@@ -148,7 +148,7 @@ def project_weekly_reports(request, pk):
     return render(request, 'projects/project_weekly_reports.html', context)
 
 
-@admin_required
+@role_required('admin')
 @login_required
 def create_project_from_quotation(request, quotation_pk):
     """
@@ -194,7 +194,7 @@ def create_project_from_quotation(request, quotation_pk):
 
 from .forms import ProjectForm, ProjectItemFormSet # Add ProjectItemFormSet
 
-@admin_required
+@role_required('admin')
 @login_required
 def project_edit(request, pk):
     project = get_object_or_404(Project, pk=pk)

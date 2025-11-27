@@ -17,10 +17,10 @@ from django.contrib.auth.decorators import login_required
 from decimal import Decimal
 
 from projects.models import Project
-from users.decorators import admin_required
+from users.decorators import admin_required,role_required
 
 @login_required
-@admin_required
+@role_required('admin')
 def accounts_dashboard(request):
     """
     Displays a high-level financial overview of all projects, including calculated percentages.
@@ -57,7 +57,7 @@ def accounts_dashboard(request):
     return render(request, 'accounts/dashboard.html', context)
     
 @login_required
-@admin_required
+@role_required('admin')
 def add_payment(request, invoice_pk):
     invoice = get_object_or_404(Invoice, pk=invoice_pk)
 
@@ -94,7 +94,7 @@ def add_payment(request, invoice_pk):
     return render(request, 'accounts/payment_form.html', context)
 
 @login_required
-@admin_required
+@role_required('admin')
 def add_credit_note(request, invoice_pk):
     invoice = get_object_or_404(Invoice, pk=invoice_pk)
 
@@ -138,7 +138,7 @@ def add_credit_note(request, invoice_pk):
 
 # --- ADD THIS NEW VIEW ---
 @login_required
-@admin_required
+@role_required('admin')
 def export_project_summary_csv(request):
     """
     Generates and streams a CSV file of the project financial summary.

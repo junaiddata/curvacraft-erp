@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from enquiries.models import Enquiry
 from .models import Quotation
 from .forms import QuotationForm, QuotationItemFormSet, QuotationStatusForm
-
+from users.decorators import role_required
 # PDF Generation Imports
 from django.http import FileResponse
 import io
@@ -17,7 +17,7 @@ from reportlab.lib.pagesizes import letter
 # -----------------
 # CORE VIEWS
 # -----------------
-
+@role_required('admin','staff')
 @login_required
 def quotation_list(request):
     """
@@ -43,6 +43,7 @@ def quotation_list(request):
     context = {'enquiries': enquiries_with_quotes}
     return render(request, 'quotations/quotation_list.html', context)
 
+@role_required('admin','staff')
 @login_required
 def quotation_detail(request, pk):
     """Displays the details, line items, and status form for a single quotation."""
@@ -59,6 +60,7 @@ def quotation_detail(request, pk):
     context = {'quotation': quotation, 'status_form': status_form}
     return render(request, 'quotations/quotation_detail.html', context)
 
+@role_required('admin','staff')
 @login_required
 def manage_quotation(request, enquiry_pk, quote_type):
     """
@@ -289,6 +291,7 @@ def process_logo(logo_url):
 # THE ENHANCED PDF VIEW
 # ---------------------------------
 @login_required
+@role_required('admin','staff')
 def quotation_pdf_view(request, pk):
     """Generates a professional, beautifully designed PDF quotation"""
     quotation = get_object_or_404(Quotation, pk=pk)
