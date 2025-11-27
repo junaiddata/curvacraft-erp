@@ -56,14 +56,13 @@
             <h2>Daily Report</h2>
             <h4>{{ report.project.title }} | {{ report.date|date:"l, d M Y" }}</h4>
         </div>
-                {% if user.role == 'admin' %}
-            <a href="{% url 'projects:project_detail' pk=project.pk %}" style="color:var(--text-secondary); text-decoration:none; font-weight:600;">
-                &larr; Back to Overview
-            </a>
+        <!-- THIS IS THE CORRECTED "SMART BACK BUTTON" -->
+        {% if user.role == 'admin' %}
+            <!-- For admins, link back to the daily task list page -->
+            <a href="{% url 'projects:project_daily_tasks' pk=report.project.pk %}">&larr; Back to Task List</a>
         {% else %}
-            <a href="{% url 'core:home' %}" style="color:var(--text-secondary); text-decoration:none; font-weight:600;">
-                &larr; Back to Dashboard
-            </a>
+            <!-- For SCOs, link back to their main project dashboard -->
+            <a href="{% url 'core:home' %}">&larr; Back to My Dashboard</a>
         {% endif %}
     </div>
 
