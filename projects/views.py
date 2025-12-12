@@ -150,36 +150,32 @@ def project_weekly_reports(request, pk):
     return render(request, 'projects/project_weekly_reports.html', context)
 
 
-@role_required('admin')
 @login_required
+@role_required('admin')
 def create_project_from_quotation(request, quotation_pk):
     """
-    Handles the creation of a Project from an accepted Quotation.
+    Handles the complete creation of a Project from an accepted Quotation.
     """
     quotation = get_object_or_404(Quotation, pk=quotation_pk)
 
     # Prevent creating a project if one already exists for this quote
-    if hasattr(quotation, 'project'):
+    if hasattr(quotation, 'project') and quotation.project is not None:
         messages.warning(request, 'A project already exists for this quotation.')
         return redirect('projects:project_detail', pk=quotation.project.pk)
 
     if request.method == 'POST':
-        # 1. Create the new project
+        # --- This is the complete and correct sequence ---
+
+        # 1. Create the new project object with ALL required fields
         new_project = Project.objects.create(
             quotation=quotation,
             title=f"Project for {quotation.enquiry.customer.name}",
-            # Copy the tax rate from the quote as a starting point
+            customer=quotation.enquiry.customer,  # <-- The fix for the IntegrityError
+            location=quotation.enquiry.location,  # <-- The fix for the IntegrityError
             tax_percentage=quotation.tax_percentage 
         )
-                # --- THIS IS THE NEW, CORRECT LOGIC ---
-        # 3. Create the fixed Milestone Phase headers for the new project
-        MilestonePhase.objects.create(project=new_project, name="Kick off meeting", details="Phase 1- Module 1 & 2", default_timeline="1-3 days", order=10)
-        MilestonePhase.objects.create(project=new_project, name="Concept Design", details="Phase 2- Module 3,4 & 5", default_timeline="4 weeks", order=20)
-        MilestonePhase.objects.create(project=new_project, name="Detail Design", details="Phase 3- Module 6,7& 8", default_timeline="3 weeks", order=30)
-        MilestonePhase.objects.create(project=new_project, name="Estimation", details="Phase 4", order=40)
-        # --- END OF NEW LOGIC ---
 
-        # 2. Loop through quote items and create project items
+        # 2. Loop through quote items and create project items for the new project
         for item in quotation.items.all():
             ProjectItem.objects.create(
                 project=new_project,
@@ -189,12 +185,18 @@ def create_project_from_quotation(request, quotation_pk):
                 unit_price=item.unit_price
             )
 
-        # 3. Update the quotation's status
+        # 3. Create the fixed Milestone Phase headers for the new project
+        MilestonePhase.objects.create(project=new_project, name="Kick off meeting", details="Phase 1- Module 1 & 2", default_timeline="1-3 days", order=10)
+        MilestonePhase.objects.create(project=new_project, name="Concept Design", details="Phase 2- Module 3,4 & 5", default_timeline="4 weeks", order=20)
+        MilestonePhase.objects.create(project=new_project, name="Detail Design", details="Phase 3- Module 6,7& 8", default_timeline="3 weeks", order=30)
+        MilestonePhase.objects.create(project=new_project, name="Estimation", details="Phase 4", order=40)
+
+        # 4. Update the quotation's status to 'Accepted'
         quotation.status = 'ACCEPTED'
         quotation.save()
 
-        messages.success(request, 'Project created successfully! Please review the final budget and assign SCOs.')
-        # Redirect to the new project's edit page
+        messages.success(request, 'Project created successfully! Please review the final details and assign SCOs.')
+        # Redirect to the new project's EDIT page to finalize
         return redirect('projects:project_edit', pk=new_project.pk)
 
     # If it's a GET request, show the confirmation page
