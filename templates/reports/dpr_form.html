@@ -1,0 +1,160 @@
+<!-- templates/reports/dpr_form.html -->
+{% extends "base.html" %}
+{% block content %}
+<h1>{{ action }} Daily Progress Report</h1>
+<h4>Project: {{ project.title }}</h4>
+
+<style>
+    /* Shared styles for all tables on this page */
+    .item-table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; }
+    .item-table th, .item-table td { padding: 8px; border: 1px solid var(--border-light); vertical-align: top; }
+    .item-table thead { background-color: var(--bg-hover); }
+    .item-form-row input[type="checkbox"] { display: none; }
+    .delete-btn { background-color: var(--error); color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
+    .item-form-row.marked-for-deletion { opacity: 0.4; background-color: #fee2e2; }
+    .item-form-row.marked-for-deletion input,
+    .item-form-row.marked-for-deletion textarea { pointer-events: none; }
+
+    
+</style>
+
+<form method="post">
+    {% csrf_token %}
+    <div class="card">
+        <div class="card-header"><h3>Main Details</h3></div>
+        {{ form.as_p }}
+    </div>
+    
+    <!-- Manpower Section -->
+    <div class="card">
+        <div class="card-header"><h3>Staff & Labor (Main Contractor)</h3></div>
+        <table id="manpower-table" class="item-table">
+            <thead><tr><th>Staff / Labor</th><th>Day Count</th><th>Night Count</th><th>Action</th></tr></thead>
+            <tbody id="manpower-form-list">
+                {{ manpower_formset.management_form }}
+                {% for form in manpower_formset.forms %}
+                <tr class="item-form-row">{{ form.id }}<td>{{ form.staff_type }}</td><td>{{ form.day_count }}</td><td>{{ form.night_count }}</td><td>{{ form.DELETE }}<button type="button" class="delete-btn">Delete</button></td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <button type="button" class="add-item-btn btn-secondary" data-prefix="manpower">+ Add Manpower</button>
+    </div>
+
+<!-- Subcontractor Section -->
+<div class="card">
+    <div class="card-header">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h3>Staff & Labor (Subcontractor)</h3>
+            <!-- THIS IS THE NEW FIELD, PLACED IN THE HEADER -->
+            <div class="form-group" style="margin: 0; width: 40%;">
+                <label for="{{ form.subcontractor_name.id_for_label }}">Subcontractor Name</label>
+                {{ form.subcontractor_name }}
+            </div>
+        </div>
+    </div>
+    <table id="subcontractor-table" class="item-table">
+        <thead>
+            <tr>
+                <!-- REMOVED THE HEADER -->
+                <th>Staff / Labor</th>
+                <th>Day Count</th>
+                <th>Night Count</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody id="subcontractor-form-list">
+            {{ subcontractor_formset.management_form }}
+            {% for form in subcontractor_formset.forms %}
+            <tr class="item-form-row">
+                {{ form.id }}
+                <!-- REMOVED THE CELL -->
+                <td>{{ form.staff_type }}</td>
+                <td>{{ form.day_count }}</td>
+                <td>{{ form.night_count }}</td>
+                <td>{{ form.DELETE }}<button type="button" class="delete-btn">Delete</button></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <button type="button" class="add-item-btn btn-secondary" data-prefix="subcontractor">+ Add Subcontractor Staff</button>
+</div>
+
+
+    <!-- Equipment Section -->
+    <div class="card">
+        <div class="card-header"><h3>Major Equipment on Site</h3></div>
+        <table id="equipment-table" class="item-table">
+            <thead><tr><th>Equipment</th><th>Day Count</th><th>Night Count</th><th>Action</th></tr></thead>
+            <tbody id="equipment-form-list">
+                {{ equipment_formset.management_form }}
+                {% for form in equipment_formset.forms %}
+                <tr class="item-form-row">{{ form.id }}<td>{{ form.equipment_name }}</td><td>{{ form.day_count }}</td><td>{{ form.night_count }}</td><td>{{ form.DELETE }}<button type="button" class="delete-btn">Delete</button></td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <button type="button" class="add-item-btn btn-secondary" data-prefix="equipment">+ Add Equipment</button>
+    </div>
+    
+    <div style="text-align: right; margin-top: 2rem;">
+        <button type="submit">Save DPR</button>
+    </div>
+</form>
+
+<!-- Hidden Templates for JavaScript -->
+<div id="hidden-templates" style="display:none;">
+    <table id="manpower-empty-form-template"><tbody><tr class="item-form-row">{{ manpower_formset.empty_form.id }}<td>{{ manpower_formset.empty_form.staff_type }}</td><td>{{ manpower_formset.empty_form.day_count }}</td><td>{{ manpower_formset.empty_form.night_count }}</td><td>{{ manpower_formset.empty_form.DELETE }}<button type="button" class="delete-btn">Delete</button></td></tr></tbody></table>
+    
+    <!-- THIS IS THE CORRECTED HIDDEN TEMPLATE -->
+    <table id="subcontractor-empty-form-template"><tbody>
+        <tr class="item-form-row">
+            {{ subcontractor_formset.empty_form.id }}
+            <td>{{ subcontractor_formset.empty_form.staff_type }}</td>
+            <td>{{ subcontractor_formset.empty_form.day_count }}</td>
+            <td>{{ subcontractor_formset.empty_form.night_count }}</td>
+            <td>{{ subcontractor_formset.empty_form.DELETE }}<button type="button" class="delete-btn">Delete</button></td>
+        </tr>
+    </tbody></table>
+
+    <table id="equipment-empty-form-template"><tbody><tr class="item-form-row">{{ equipment_formset.empty_form.id }}<td>{{ equipment_formset.empty_form.equipment_name }}</td><td>{{ equipment_formset.empty_form.day_count }}</td><td>{{ equipment_formset.empty_form.night_count }}</td><td>{{ equipment_formset.empty_form.DELETE }}<button type="button" class="delete-btn">Delete</button></td></tr></tbody></table>
+</div>
+
+<script>
+// Your Universal Add/Delete Item script is correct and does not need to be changed.
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.add-item-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const prefix = this.getAttribute('data-prefix');
+            const formListBody = document.getElementById(prefix + '-form-list');
+            const emptyFormTemplate = document.getElementById(prefix + '-empty-form-template').querySelector('tbody').innerHTML;
+            const totalFormsInput = document.getElementById('id_' + prefix + '-TOTAL_FORMS');
+            
+            if (totalFormsInput) {
+                let formNum = parseInt(totalFormsInput.value);
+                let newFormHtml = emptyFormTemplate.replace(/__prefix__/g, formNum);
+                formListBody.insertAdjacentHTML('beforeend', newFormHtml);
+                totalFormsInput.value = formNum + 1;
+            }
+        });
+    });
+
+    document.querySelectorAll('.item-table tbody').forEach(tbody => {
+        tbody.addEventListener('click', function(event) {
+            if (event.target && event.target.classList.contains('delete-btn')) {
+                const row = event.target.closest('.item-form-row');
+                if (row && !row.querySelector('input[name$="-id"][value]')) {
+                    if (confirm('Remove this new item?')) { row.remove(); }
+                    return;
+                }
+                const deleteCheckbox = row.querySelector('input[type="checkbox"]');
+                if (deleteCheckbox) {
+                    if (confirm('Delete this item upon saving?')) {
+                        deleteCheckbox.checked = true;
+                        row.classList.add('marked-for-deletion');
+                    }
+                }
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

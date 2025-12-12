@@ -37,3 +37,4 @@ class ProjectAdmin(admin.ModelAdmin):
         return ", ".join([sco.username for sco in obj.assigned_scos.all()])
     
     display_scos.short_description = 'Assigned SCOs'
+

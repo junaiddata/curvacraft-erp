@@ -4,7 +4,8 @@ from projects.models import Project
 from enquiries.models import Enquiry
 from quotations.models import Quotation
 from progress.models import DailyProgress
-
+from django.db.models import Prefetch # Add this import
+from reports.models import DailyReport # Add this import
 
 
 
@@ -37,9 +38,18 @@ def home_view(request):
         return redirect('enquiries:enquiry_list')
     
     # 3. Handle SCO role (this is now the final 'else')
-    else:
-        # For SCOs, show their assigned projects.
-        assigned_projects = Project.objects.filter(assigned_scos=request.user).order_by('status')
+    else: # SCO
+        # --- THIS IS THE MODIFIED QUERY ---
+        # We want to get the 3 most recent reports for each project
+        recent_reports = DailyReport.objects.order_by('-date')
+
+        assigned_projects = Project.objects.filter(
+            assigned_scos=request.user
+        ).prefetch_related(
+            # Prefetch only the 3 most recent reports for each project
+            Prefetch('daily_reports', queryset=recent_reports, to_attr='recent_dprs')
+        ).order_by('status')
+        
         context = {
             'projects': assigned_projects
         }

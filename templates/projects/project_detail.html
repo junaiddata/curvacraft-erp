@@ -82,7 +82,7 @@
                 <dt>Status</dt> <dd>{{ project.get_status_display }}</dd>
                 <dt>Customer</dt> <dd>{{ project.customer }}</dd>
                 <dt>Location</dt> <dd>{{ project.location }}</dd>
-                <dt>Assigned SCOs</dt>
+                <dt>Assigned Contractors</dt>
                 <dd>
                     {% for sco in project.assigned_scos.all %}{{ sco.username }}{% if not forloop.last %}, {% endif %}{% empty %}Not Assigned{% endfor %}
                 </dd>
@@ -107,6 +107,22 @@
                 <div class="action-text">
                     <h4>Weekly Reports</h4>
                     <p>Manage high-level weekly summaries.</p>
+                </div>
+            </a>
+
+            <!-- THIS IS THE FIX -->
+            <a href="{% url 'reports:dpr_list' project_pk=project.pk %}" class="action-link">
+                <span class="action-icon">📝</span>
+                <div class="action-text">
+                    <h4>Daily Progress Reports</h4>
+                    <p>Manage formal DPRs for this project.</p>
+                </div>
+            </a>
+            <a href="{% url 'projects:project_tracking_detail' pk=project.pk %}" class="action-link">
+                <span class="action-icon">📈</span>
+                <div class="action-text">
+                    <h4>Milestone Tracking</h4>
+                    <p>Manage the project's design phases and timeline.</p>
                 </div>
             </a>
 

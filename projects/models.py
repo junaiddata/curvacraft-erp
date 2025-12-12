@@ -6,8 +6,9 @@ from quotations.models import Quotation
 from users.models import User # Import our custom User model
 from decimal import Decimal
 from django.db.models import Sum
+from enquiries.models import Customer # Add this import
 
-
+from django.utils import timezone # Make sure timezone is imported at the top
 class Project(models.Model):
     """
     Represents an active project, created from an accepted quotation.
@@ -20,7 +21,11 @@ class Project(models.Model):
         CANCELLED = 'CANCELLED', _('Cancelled')
 
     # Link to the quotation that this project was created from
-    quotation = models.OneToOneField(Quotation, on_delete=models.PROTECT, related_name='project')
+    quotation = models.OneToOneField(Quotation, on_delete=models.SET_NULL, null=True, blank=True, related_name='project')
+    
+    # --- NEW: Direct links for Customer and Location ---
+    customer = models.ForeignKey(Customer, on_delete=models.PROTECT, related_name='projects')
+    location = models.CharField(max_length=255, blank=True)
     tax_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=5.00)
     # --- Key Feature: Assigning an SCO ---
     # We link to the User model, but only want to show SCOs as options.
@@ -43,15 +48,28 @@ class Project(models.Model):
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+        # --- ADD THESE NEW FIELDS ---
+    mobilization_date = models.DateField(null=True, blank=True)
+    handover_date = models.DateField(null=True, blank=True)
+    site_engineer = models.CharField(max_length=255, null=True, blank=True)
+
+    # --- ADD THIS NEW PROPERTY ---
+    @property
+    def days_remaining(self):
+        """
+        Calculates the number of days remaining until the handover date.
+        The calculation is independent of the project's current status.
+        """
+        # The only thing we need to check is if a handover_date actually exists.
+        if self.handover_date:
+            remaining = self.handover_date - timezone.now().date()
+            return remaining.days
+        
+        # If there's no handover date, we cannot calculate the days remaining.
+        return None
     
     # Helper properties to easily access related data
-    @property
-    def customer(self):
-        return self.quotation.enquiry.customer
-
-    @property
-    def location(self):
-        return self.quotation.enquiry.location
 
     def __str__(self):
         return self.title
@@ -135,5 +153,39 @@ class ProjectItem(models.Model):
     def total_amount(self):
         return Decimal(self.quantity) * Decimal(self.unit_price)
 
+    def __str__(self):
+        return self.description[:50]
+
+
+
+
+class MilestonePhase(models.Model):
+    """A fixed phase header for the tracking sheet (e.g., 'Concept Design')."""
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='milestone_phases')
+    name = models.CharField(max_length=255)
+    details = models.CharField(max_length=255, blank=True) # e.g., 'Phase 1 - Module 1 & 2'
+    default_timeline = models.CharField(max_length=100, blank=True) # e.g., '4 weeks'
+    order = models.PositiveIntegerField(default=0)
+    
+    class Meta:
+        ordering = ['order']
+
+    def __str__(self):
+        return self.name
+
+class MilestoneTask(models.Model):
+    """A single, dynamic task row that belongs to a MilestonePhase."""
+    phase = models.ForeignKey(MilestonePhase, on_delete=models.CASCADE, related_name='tasks')
+    
+    sl_no = models.CharField(max_length=50, blank=True)
+    description = models.TextField()
+    timeline_date = models.DateField(null=True, blank=True)
+    invoices_submitted = models.CharField(max_length=100, blank=True)
+    amount_received_date = models.DateField(null=True, blank=True)
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['order']
+        
     def __str__(self):
         return self.description[:50]

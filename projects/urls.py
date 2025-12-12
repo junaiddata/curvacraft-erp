@@ -15,4 +15,10 @@ urlpatterns = [
     path('project/<int:pk>/edit/', views.project_edit, name='project_edit'),
     path('project/<int:pk>/daily/', views.project_daily_tasks, name='project_daily_tasks'),
     path('ajax/get-scos/', views.get_scos_as_html, name='ajax_get_scos'),
+    path('project/<int:pk>/tracking/', views.project_tracking_detail, name='project_tracking_detail'),
+    # This is the NEW URL for the form/edit page
+    path('project/<int:pk>/tracking/edit/', views.project_tracking_edit, name='project_tracking_edit'),
+
+    path('create-direct/', views.project_create_direct, name='project_create_direct'),
+
 ]

@@ -1,0 +1,58 @@
+<!-- templates/projects/project_tracking_detail.html -->
+{% extends "base.html" %}
+{% block content %}
+<style>
+    .phase-row { background-color: #e3dfff; font-weight: bold; }
+    .phase-row:hover { background-color: #e3dfff; }
+    .note-row { background-color: #fff3cd; font-style: italic; }
+    .data-table td { vertical-align: top; }
+</style>
+
+<div style="display: flex; justify-content: space-between; align-items: center;">
+    <div>
+        <h1>Project Milestone Tracking</h1>
+        <h4>Project: {{ project.title }}</h4>
+    </div>
+    <div>
+        <!-- The button to go to the EDIT page -->
+        <a href="{% url 'projects:project_tracking_edit' pk=project.pk %}" class="btn-secondary">Edit Schedule</a>
+        <a href="{% url 'projects:project_detail' pk=project.pk %}" style="margin-left: 1rem;">&larr; Back to Project Overview</a>
+    </div>
+</div>
+
+<div class="table-container" style="margin-top: 2rem;">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th style="width: 8%;">Sl.No</th>
+                <th style="width: 40%;">Design Phases</th>
+                <th>Timelines as per contract</th>
+                <th>Invoices Submitted</th>
+                <th>Amount received Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for phase in phases %}
+                <!-- Render the Phase Header Row -->
+                <tr class="phase-row">
+                    <td>{{ phase.details }}</td>
+                    <td colspan="1">{{ phase.name }}</td>
+                    <td colspan="1">{{ phase.default_timeline }}</td>
+                    <td colspan="1"></td>
+                    <td colspan="1"></td>
+                </tr>
+                <!-- Render all tasks associated with this phase -->
+                {% for task in phase.tasks.all %}
+                    <tr>
+                        <td>{{ task.sl_no }}</td>
+                        <td>{{ task.description|linebreaksbr }}</td>
+                        <td>{{ task.timeline_date|date:"d/m/Y" }}</td>
+                        <td>{{ task.invoices_submitted }}</td>
+                        <td>{{ task.amount_received_date|date:"d/m/Y" }}</td>
+                    </tr>
+                {% endfor %}
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

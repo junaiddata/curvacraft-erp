@@ -56,7 +56,10 @@
 
 <div style="display: flex; justify-content: space-between; align-items: center;">
     <h1>All Projects</h1>
-    <!-- You can add a "Create Project" button here later if you allow manual creation -->
+    <!-- ADD THIS BUTTON -->
+    <a href="{% url 'projects:project_create_direct' %}">
+        <button>+ Create Direct Project</button>
+    </a>
 </div>
 
 <div class="table-container" style="margin-top: 2rem;">

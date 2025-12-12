@@ -2,7 +2,7 @@
 
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from .models import Project, ProjectItem # Add ProjectItem
+from .models import Project, ProjectItem , MilestonePhase# Add ProjectItem
 from django.shortcuts import render, get_object_or_404 # Add get_object_or_404
 from progress.forms import DailyTaskCreationForm # Import our new form
 from progress.models import DailyProgress
@@ -12,8 +12,10 @@ from progress.forms import WeeklyTaskCreationForm # Add this import
 from progress.models import WeeklyProgress # Add this import
 import datetime # Add this import
 from quotations.models import Quotation # Import the Quotation model
-from .forms import ProjectForm # Import our new form
+from .forms import ProjectForm, MilestoneTaskFormSet# Import our new form
 from users.decorators import admin_required,role_required # Import the decorator
+from enquiries.forms import CustomerForm # Import the CustomerForm
+from enquiries.models import Customer
 
 
 @login_required
@@ -169,6 +171,13 @@ def create_project_from_quotation(request, quotation_pk):
             # Copy the tax rate from the quote as a starting point
             tax_percentage=quotation.tax_percentage 
         )
+                # --- THIS IS THE NEW, CORRECT LOGIC ---
+        # 3. Create the fixed Milestone Phase headers for the new project
+        MilestonePhase.objects.create(project=new_project, name="Kick off meeting", details="Phase 1- Module 1 & 2", default_timeline="1-3 days", order=10)
+        MilestonePhase.objects.create(project=new_project, name="Concept Design", details="Phase 2- Module 3,4 & 5", default_timeline="4 weeks", order=20)
+        MilestonePhase.objects.create(project=new_project, name="Detail Design", details="Phase 3- Module 6,7& 8", default_timeline="3 weeks", order=30)
+        MilestonePhase.objects.create(project=new_project, name="Estimation", details="Phase 4", order=40)
+        # --- END OF NEW LOGIC ---
 
         # 2. Loop through quote items and create project items
         for item in quotation.items.all():
@@ -279,3 +288,121 @@ def get_scos_as_html(request):
     # Create a fresh, unbound form to get the latest choices
     form = ProjectForm() 
     return render(request, 'projects/partials/sco_checkbox_list.html', {'form': form})
+
+
+
+# projects/views.py
+from django.forms import formset_factory, modelformset_factory
+
+# --- THIS IS THE NEW VIEW for the read-only page ---
+@login_required
+@role_required('admin')
+def project_tracking_detail(request, pk):
+    project = get_object_or_404(Project, pk=pk)
+    # We prefetch the related tasks for a huge performance boost
+    phases = project.milestone_phases.prefetch_related('tasks')
+    context = {
+        'project': project,
+        'phases': phases,
+    }
+    return render(request, 'projects/project_tracking_detail.html', context)
+
+
+# --- THIS IS YOUR RENAMED VIEW for the form/edit page ---
+# projects/views.py
+from .forms import MilestonePhaseFormSet, MilestoneTaskFormSet
+from .models import Project, MilestonePhase # Make sure MilestonePhase is imported
+
+@login_required
+@role_required('admin')
+def project_tracking_edit(request, pk):
+    project = get_object_or_404(Project, pk=pk)
+    
+    # We get the queryset of phases for this project to pass to the main formset
+    phase_queryset = MilestonePhase.objects.filter(project=project)
+
+    if request.method == 'POST':
+        # Create the main formset for the phases from the POST data
+        phase_formset = MilestonePhaseFormSet(request.POST, queryset=phase_queryset, prefix='phases')
+        
+        # We also need to create instances of the nested task formsets with the POST data
+        nested_task_formsets = []
+        for phase in phase_queryset:
+            task_formset = MilestoneTaskFormSet(request.POST, instance=phase, prefix=f'tasks-{phase.pk}')
+            nested_task_formsets.append(task_formset)
+
+        # Validate everything at once
+        if phase_formset.is_valid() and all(fs.is_valid() for fs in nested_task_formsets):
+            phase_formset.save() # Save the changes to the Phase timelines
+            for fs in nested_task_formsets:
+                fs.save() # Save the changes to the Tasks
+            
+            messages.success(request, 'Tracking schedule has been updated.')
+            return redirect('projects:project_tracking_detail', pk=project.pk)
+        else:
+            messages.error(request, "Please correct the errors below.")
+    else:
+        # For a GET request, create the unbound formsets
+        phase_formset = MilestonePhaseFormSet(queryset=phase_queryset, prefix='phases')
+        nested_task_formsets = []
+        for phase in phase_queryset:
+            task_formset = MilestoneTaskFormSet(instance=phase, prefix=f'tasks-{phase.pk}')
+            nested_task_formsets.append(task_formset)
+
+    # Zip the individual forms from the phase_formset with their corresponding task formset
+    # This gives the template everything it needs in one loop
+    phase_and_formsets_zipped = zip(phase_formset, nested_task_formsets)
+    
+    context = {
+        'project': project,
+        'phase_formset': phase_formset, # This is needed for the management form
+        'phase_and_formsets_zipped': phase_and_formsets_zipped, # This is for the main loop
+    }
+    return render(request, 'projects/project_tracking_form.html', context)
+
+
+
+
+
+# --- ADD THIS NEW VIEW ---
+@login_required
+@role_required('admin')
+def project_create_direct(request):
+    if request.method == 'POST':
+        # We are submitting all three forms at once
+        customer_form = CustomerForm(request.POST)
+        project_form = ProjectForm(request.POST) # A simplified project form
+        formset = ProjectItemFormSet(request.POST)
+
+        if customer_form.is_valid() and project_form.is_valid() and formset.is_valid():
+            # 1. Get or create the customer
+            customer, created = Customer.objects.get_or_create(
+                email=customer_form.cleaned_data['email'],
+                defaults={'name': customer_form.cleaned_data['name']}
+            )
+            
+            # 2. Save the project, linking the customer
+            project = project_form.save(commit=False)
+            project.customer = customer
+            project.save() # Save the project to get a PK
+
+            # 3. Save the project items, linking them to the new project
+            formset.instance = project
+            formset.save()
+            
+            # Also save the ManyToMany field for SCOs
+            project_form.save_m2m()
+
+            messages.success(request, 'Direct project created successfully!')
+            return redirect('projects:project_detail', pk=project.pk)
+    else:
+        customer_form = CustomerForm()
+        project_form = ProjectForm()
+        formset = ProjectItemFormSet(queryset=ProjectItem.objects.none())
+
+    context = {
+        'customer_form': customer_form,
+        'project_form': project_form,
+        'formset': formset
+    }
+    return render(request, 'projects/project_create_direct_form.html', context)

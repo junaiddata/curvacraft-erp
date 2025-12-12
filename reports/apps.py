@@ -1,6 +1,6 @@
-# projects/apps.py
 from django.apps import AppConfig
 
-class ProjectsConfig(AppConfig):
+
+class ReportsConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'projects'
+    name = 'reports'

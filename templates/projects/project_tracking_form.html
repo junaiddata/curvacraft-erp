@@ -1,0 +1,143 @@
+<!-- templates/projects/project_tracking_form.html -->
+{% extends "base.html" %}
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center;">
+    <h1>Edit Milestone Tracking</h1>
+    <a href="{% url 'projects:project_tracking_detail' pk=project.pk %}">&larr; Back to View</a>
+</div>
+<h4>Project: {{ project.title }}</h4>
+
+<style>
+    .phase-card { margin-bottom: 2rem; }
+    .phase-header-form { display: grid; grid-template-columns: 1.5fr 2fr 1.5fr; gap: 1rem; align-items: center; background-color: #e9ecef; padding: 0.5rem 1rem; border-radius: 8px 8px 0 0; }
+    .phase-header-form input { font-weight: bold; }
+    .task-table { margin-bottom: 1rem; }
+    .task-table input, .task-table textarea { width: 100%; border: 1px solid #ccc; padding: 4px; }
+    .task-table textarea { resize: vertical; }
+    .task-row input[type="checkbox"] { display: none; }
+    .delete-btn { background-color: var(--error); color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
+    .task-row.marked-for-deletion { opacity: 0.4; background-color: #fee2e2; }
+</style>
+
+<form method="post">
+    {% csrf_token %}
+    <!-- Management form for the PARENT (Phase) formset -->
+    {{ phase_formset.management_form }}
+    
+    {% for phase_form, task_formset in phase_and_formsets_zipped %}
+    <div class="card phase-card" style="padding: 0;">
+        
+        <!-- Hidden ID for the phase_form -->
+        {{ phase_form.id }}
+        
+        <!-- Phase Header (with editable timeline) -->
+        <div class="phase-header-form">
+            <!-- Render the read-only fields as hidden inputs -->
+            <div style="display: none;">{{ phase_form.details }}{{ phase_form.name }}</div>
+            <!-- Display their values for the user -->
+            <span>{{ phase_form.instance.details }}</span>
+            <span>{{ phase_form.instance.name }}</span>
+            <!-- Render the editable timeline input -->
+            <div>{{ phase_form.default_timeline }}</div>
+        </div>
+        
+        <div style="padding: 1.5rem;">
+            <!-- Management form for the NESTED (Task) formset -->
+            {{ task_formset.management_form }}
+            
+            <table class="data-table task-table">
+                <thead>
+                    <tr>
+                        <th style="width: 8%;">Sl.No</th>
+                        <th style="width: 45%;">Description</th>
+                        <th>Timeline Date</th>
+                        <th>Invoices Submitted</th>
+                        <th>Amount Received Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="formset-body-{{ task_formset.prefix }}">
+                    {% for task_form in task_formset %}
+                    <tr class="task-row">
+                        {{ task_form.id }}
+                        <td>{{ task_form.sl_no }}</td>
+                        <td>{{ task_form.description }}</td>
+                        <td>{{ task_form.timeline_date }}</td>
+                        <td>{{ task_form.invoices_submitted }}</td>
+                        <td>{{ task_form.amount_received_date }}</td>
+                        <td>
+                            {{ task_form.DELETE }}
+                            <button type="button" class="delete-btn">Delete</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <!-- Hidden empty form template for THIS task formset -->
+            <div id="empty-form-{{ task_formset.prefix }}" style="display: none;">
+                <table><tbody>
+                    <tr class="task-row">
+                        {{ task_formset.empty_form.id }}
+                        <td>{{ task_formset.empty_form.sl_no }}</td>
+                        <td>{{ task_formset.empty_form.description }}</td>
+                        <td>{{ task_formset.empty_form.timeline_date }}</td>
+                        <td>{{ task_formset.empty_form.invoices_submitted }}</td>
+                        <td>{{ task_formset.empty_form.amount_received_date }}</td>
+                        <td>
+                            {{ task_formset.empty_form.DELETE }}
+                            <button type="button" class="delete-btn">Delete</button>
+                        </td>
+                    </tr>
+                </tbody></table>
+            </div>
+
+            <button type="button" class="add-row-btn btn-secondary" data-prefix="{{ task_formset.prefix }}">+ Add Task</button>
+        </div>
+    </div>
+    {% endfor %}
+    
+    <hr>
+    <div style="text-align: right;">
+        <button type="submit">Save Schedule</button>
+    </div>
+</form>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // --- ADD ROW LOGIC ---
+    document.querySelectorAll('.add-row-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const prefix = this.getAttribute('data-prefix');
+            const tbody = document.getElementById('formset-body-' + prefix);
+            const template = document.getElementById('empty-form-' + prefix).innerHTML;
+            const totalFormsInput = document.getElementById('id_' + prefix + '-TOTAL_FORMS');
+            
+            if (totalFormsInput) {
+                let formNum = parseInt(totalFormsInput.value);
+                tbody.insertAdjacentHTML('beforeend', template.replace(/__prefix__/g, formNum));
+                totalFormsInput.value = formNum + 1;
+            }
+        });
+    });
+
+    // --- DELETE ROW LOGIC (using event delegation on the whole form) ---
+    document.querySelector('form').addEventListener('click', function(event) {
+        if (event.target && event.target.classList.contains('delete-btn')) {
+            const row = event.target.closest('.task-row');
+            if (row && !row.querySelector('input[name$="-id"][value]')) {
+                if (confirm('Are you sure you want to remove this new item?')) { row.remove(); }
+                return;
+            }
+            const deleteCheckbox = row.querySelector('input[type="checkbox"]');
+            if (deleteCheckbox) {
+                if (confirm('Are you sure you want to delete this item? This will be permanent upon saving.')) {
+                    deleteCheckbox.checked = true;
+                    row.classList.add('marked-for-deletion'); // Using class from your CSS
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

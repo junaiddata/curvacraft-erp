@@ -1,0 +1,45 @@
+    <!-- templates/reports/dpr_list.html -->
+    {% extends "base.html" %}
+    {% block content %}
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h1>Daily Progress Reports (DPR)</h1>
+            <h4>Project: {{ project.title }}</h4>
+        </div>
+        <div>
+            <a href="{% url 'reports:dpr_create' project_pk=project.pk %}" class="btn">+ Create New DPR</a>
+            <a href="{% url 'projects:project_detail' pk=project.pk %}" style="margin-left: 1rem;">&larr; Back to Project</a>
+        </div>
+    </div>
+
+    <div class="table-container" style="margin-top: 2rem;">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Report #</th>
+                    <th>Date</th>
+                    <th>Created By</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for report in reports %}
+                <tr>
+                    <td>{{ report.report_number }}</td>
+                    <td>{{ report.date|date:"d M Y" }}</td>
+                    <td>{{ report.created_by.username }}</td>
+                    <td>
+                        <a href="{% url 'reports:dpr_edit' pk=report.pk %}"><button class="btn-secondary">Edit</button></a>
+                        <!-- We will add the PDF button later -->
+                            <a href="{% url 'reports:dpr_pdf' pk=report.pk %}" target="_blank">
+                                        <button class="btn-secondary">View PDF</button>
+                                    </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" class="text-center text-muted">No DPRs created for this project yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endblock %}

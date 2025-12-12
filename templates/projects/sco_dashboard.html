@@ -9,29 +9,40 @@
     /* Card Grid Layout */
     .project-grid {
         display: grid;
-        /* Creates responsive columns: 1 on small screens, 2 on medium, 3 on large */
         grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
         gap: 1.5rem;
     }
+
+    /* Main Project Card Structure */
     .project-card {
         background-color: #ffffff;
-        border: 1px solid var(--border-color);
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        border: 1px solid var(--border-light);
+        border-radius: 12px; /* Slightly more rounded */
+        box-shadow: var(--shadow-sm);
         display: flex;
-        flex-direction: column; /* Stack content vertically */
+        flex-direction: column;
+        transition: var(--transition);
     }
+    .project-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-md);
+    }
+
+    /* Card Header for Title */
     .project-card-header {
-        padding: 1.5rem 1.5rem 1rem 1.5rem;
-        border-bottom: 1px solid var(--border-color);
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid var(--border-light);
     }
     .project-card-header h3 {
         margin: 0;
         font-size: 1.25rem;
+        color: var(--primary-dark);
     }
+    
+    /* Card Body for Details */
     .project-card-body {
         padding: 1.5rem;
-        flex-grow: 1; /* Allows this section to grow and fill available space */
+        flex-grow: 1;
     }
     .project-card-details {
         list-style: none;
@@ -41,36 +52,74 @@
     .project-card-details li {
         display: flex;
         justify-content: space-between;
+        align-items: center;
         padding: 0.5rem 0;
+        font-size: 0.925rem;
     }
     .project-card-details li strong {
-        color: #6c757d;
+        color: var(--text-secondary);
+        font-weight: 500;
     }
-    .project-card-footer {
-        padding: 1.5rem;
-        background-color: #f8f9fa;
-        border-top: 1px solid var(--border-color);
-        text-align: right;
+    .project-card-details li span {
+        color: var(--text-primary);
+        font-weight: 500;
     }
 
-    /* Status Badges - can be moved to base.html if reused often */
+    /* Status Badges Styling */
     .status-badge {
-        padding: 0.25rem 0.6rem;
-        border-radius: 12px;
-        font-size: 0.8rem;
-        font-weight: bold;
+        padding: 0.25rem 0.75rem;
+        border-radius: 50px; /* Pill shape */
+        font-size: 0.75rem;
+        font-weight: 600;
         color: white;
         text-transform: uppercase;
+        letter-spacing: 0.5px;
+        white-space: nowrap;
     }
-    .status-not_started { background-color: #6c757d; }
-    .status-in_progress { background-color: #007bff; }
-    .status-on_hold { background-color: #ffc107; color: #333; }
-    .status-completed { background-color: #28a745; }
-    .status-cancelled { background-color: #dc3545; }
+    .status-not_started { background-color: var(--text-muted); }
+    .status-in_progress { background-color: var(--info); }
+    .status-on_hold { background-color: var(--warning); color: #fff; }
+    .status-completed { background-color: var(--success); }
+    .status-cancelled { background-color: var(--error); }
+
+    /* Action Links List Styling */
+    .card-actions {
+        list-style: none;
+        padding: 0;
+        margin: 0; /* Remove margin from the list itself */
+        border-top: 1px solid var(--border-light);
+    }
+    .card-actions li a {
+        display: block;
+        padding: 1rem 1.5rem;
+        text-decoration: none;
+        font-weight: 500;
+        color: var(--primary-dark);
+        border-bottom: 1px solid var(--border-light);
+        transition: background-color 0.2s;
+    }
+    .card-actions li:last-child a {
+        border-bottom: none;
+        border-radius: 0 0 12px 12px; /* Match card radius */
+    }
+    .card-actions li a:hover {
+        background-color: var(--bg-hover);
+    }
+    .card-actions .action-label {
+        font-size: 1rem;
+        display: block; /* Ensure it takes full width */
+    }
+    .card-actions .action-description {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        display: block;
+        margin-top: 0.25rem;
+    }
+
 </style>
 
 <h1>My Assigned Projects</h1>
-<p>Here are all the projects currently assigned to you. Select a project to view details and update daily progress.</p>
+<p class="text-muted">Here are all the projects currently assigned to you. Select an action to manage its progress.</p>
 <hr style="margin-bottom: 2rem;">
 
 <div class="project-grid">
@@ -95,15 +144,32 @@
                     </li>
                 </ul>
             </div>
-            <div class="project-card-footer">
-                <a href="{% url 'projects:project_daily_tasks' pk=project.pk %}">
-                    <button>View Project & Update Progress</button>
-                </a>
-            </div>
+
+            <!-- This is the unified action section at the bottom of the card -->
+            <ul class="card-actions">
+                <li>
+                    <a href="{% url 'projects:project_daily_tasks' pk=project.pk %}">
+                        <span class="action-label">📅 Manage Daily Tasks</span>
+                        <span class="action-description">View assigned tasks and submit simple progress updates.</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'projects:project_weekly_reports' pk=project.pk %}">
+                        <span class="action-label">🗓️ Manage Weekly Tasks</span>
+                        <span class="action-description">View and submit weekly summary tasks.</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'reports:dpr_list' project_pk=project.pk %}">
+                        <span class="action-label">📝 Daily Progress Reports (DPR)</span>
+                        <span class="action-description">Fill out and manage formal daily reports.</span>
+                    </a>
+                </li>
+            </ul>
         </div>
     {% empty %}
-        <div class="card" style="grid-column: 1 / -1;"> <!-- Make the card span all columns -->
-            <p style="text-align: center; margin: 0;">You have no projects assigned to you.</p>
+        <div class="card" style="grid-column: 1 / -1;">
+            <p style="text-align: center; margin: 0;" class="text-muted">You have no projects assigned to you.</p>
         </div>
     {% endfor %}
 </div>
