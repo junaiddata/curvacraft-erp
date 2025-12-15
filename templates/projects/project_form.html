@@ -58,6 +58,13 @@
         <a href="{% url 'projects:project_detail' pk=project.pk %}">&larr; Back to Project Overview</a>
     </div>
     <p class="text-muted">Finalize the project scope, budget, and team assignments.</p>
+                <!-- THIS IS THE NEW BUTTON -->
+            {% if fitout_quote_exists %}
+            <form method="post" action="{% url 'projects:import_fitout_items' pk=project.pk %}" onsubmit="return confirm('This will add items from the Fitout quote to the current scope. Are you sure?');">
+                {% csrf_token %}
+                <button type="submit" class="btn-secondary">Copy from Fitout Quote</button>
+            </form>
+            {% endif %}
 
     <form method="post">
         {% csrf_token %}

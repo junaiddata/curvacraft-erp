@@ -20,5 +20,6 @@ urlpatterns = [
     path('project/<int:pk>/tracking/edit/', views.project_tracking_edit, name='project_tracking_edit'),
 
     path('create-direct/', views.project_create_direct, name='project_create_direct'),
+    path('project/<int:pk>/import-fitout/', views.import_fitout_items, name='import_fitout_items'),
 
 ]

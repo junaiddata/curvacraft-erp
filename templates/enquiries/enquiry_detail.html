@@ -126,6 +126,13 @@
             </form>
             <p>Current Status: <strong>{{ enquiry.get_status_display }}</strong></p>
             <hr>
+            <h4>Manage Enquiry</h4>
+                <a href="{% url 'enquiries:enquiry_edit' pk=enquiry.pk %}" class="action-button" style="background-color: var(--primary-medium);">Edit This Enquiry</a>
+
+                <!-- Only show the delete button to Admins -->
+                {% if user.role == 'admin' %}
+                <a href="{% url 'enquiries:enquiry_delete' pk=enquiry.pk %}" class="action-button" style="background-color: var(--error);">Delete This Enquiry</a>
+                {% endif %}
             
             <!-- MANAGE QUOTATIONS -->
             <h4>Manage Quotations</h4>

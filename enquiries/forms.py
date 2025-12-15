@@ -3,7 +3,19 @@
 from django import forms
 from .models import Enquiry, Customer
 
+# enquiries/forms.py
+from django import forms
+from .models import Enquiry, Customer
+
+class ExistingCustomerForm(forms.Form):
+    """A form to select a customer that is already in the database."""
+    customer = forms.ModelChoiceField(
+        queryset=Customer.objects.all().order_by('name'),
+        label="Select an Existing Customer"
+    )
+
 class CustomerForm(forms.ModelForm):
+    """This is now the 'NewCustomerForm'."""
     class Meta:
         model = Customer
         fields = ['name', 'email', 'phone_number', 'address']

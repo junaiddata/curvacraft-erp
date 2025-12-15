@@ -14,7 +14,7 @@ import datetime # Add this import
 from quotations.models import Quotation # Import the Quotation model
 from .forms import ProjectForm, MilestoneTaskFormSet# Import our new form
 from users.decorators import admin_required,role_required # Import the decorator
-from enquiries.forms import CustomerForm # Import the CustomerForm
+from enquiries.forms import CustomerForm ,ExistingCustomerForm # Import the CustomerForm
 from enquiries.models import Customer
 
 
@@ -209,6 +209,8 @@ from .forms import ProjectForm, ProjectItemFormSet # Add ProjectItemFormSet
 @login_required
 def project_edit(request, pk):
     project = get_object_or_404(Project, pk=pk)
+
+
     if request.method == 'POST':
         form = ProjectForm(request.POST, instance=project)
         formset = ProjectItemFormSet(request.POST, instance=project)
@@ -220,8 +222,15 @@ def project_edit(request, pk):
     else:
         form = ProjectForm(instance=project)
         formset = ProjectItemFormSet(instance=project)
+    
+    fitout_quote_exists = False
+    if project.quotation:
+        fitout_quote_exists = Quotation.objects.filter(
+            enquiry=project.quotation.enquiry, 
+            quote_type='FITOUT'
+        ).exists()
 
-    context = {'form': form, 'formset': formset, 'project': project} # Add formset
+    context = {'form': form, 'formset': formset, 'project': project,'fitout_quote_exists': fitout_quote_exists} # Add formset
     return render(request, 'projects/project_form.html', context)
 
 
@@ -371,40 +380,109 @@ def project_tracking_edit(request, pk):
 @role_required('admin')
 def project_create_direct(request):
     if request.method == 'POST':
-        # We are submitting all three forms at once
-        customer_form = CustomerForm(request.POST)
-        project_form = ProjectForm(request.POST) # A simplified project form
-        formset = ProjectItemFormSet(request.POST)
+        # Determine which customer form was submitted
+        form_type = request.POST.get('form_type')
+        
+        project_form = ProjectForm(request.POST)
+        formset = ProjectItemFormSet(request.POST, prefix='items') # Add a prefix
+        
+        customer_to_use = None
+        
+        if form_type == 'existing':
+            existing_customer_form = ExistingCustomerForm(request.POST)
+            new_customer_form = CustomerForm() # Keep an empty one for the template
+            if existing_customer_form.is_valid():
+                customer_to_use = existing_customer_form.cleaned_data['customer']
+        else: # form_type == 'new'
+            new_customer_form = CustomerForm(request.POST)
+            existing_customer_form = ExistingCustomerForm() # Keep empty
+            if new_customer_form.is_valid():
+                customer_to_use, created = Customer.objects.get_or_create(
+                    email=new_customer_form.cleaned_data['email'],
+                    defaults={'name': new_customer_form.cleaned_data['name']}
+                )
 
-        if customer_form.is_valid() and project_form.is_valid() and formset.is_valid():
-            # 1. Get or create the customer
-            customer, created = Customer.objects.get_or_create(
-                email=customer_form.cleaned_data['email'],
-                defaults={'name': customer_form.cleaned_data['name']}
-            )
-            
-            # 2. Save the project, linking the customer
+        # Now, validate the project and item forms
+        if customer_to_use and project_form.is_valid() and formset.is_valid():
+            # Save the project, linking the customer
             project = project_form.save(commit=False)
-            project.customer = customer
-            project.save() # Save the project to get a PK
+            project.customer = customer_to_use
+            project.save()
+            
+            # Save the ManyToMany field (assigned_scos)
+            project_form.save_m2m()
 
-            # 3. Save the project items, linking them to the new project
+            # Save the project items
             formset.instance = project
             formset.save()
             
-            # Also save the ManyToMany field for SCOs
-            project_form.save_m2m()
+            # Create the milestone phases for the new project
+            MilestonePhase.objects.create(project=project, name="Kick off meeting", details="Phase 1- Module 1 & 2", default_timeline="1-3 days", order=10)
+            MilestonePhase.objects.create(project=project, name="Concept Design", details="Phase 2- Module 3,4 & 5", default_timeline="4 weeks", order=20)
+            MilestonePhase.objects.create(project=project, name="Detail Design", details="Phase 3- Module 6,7& 8", default_timeline="3 weeks", order=30)
+            MilestonePhase.objects.create(project=project, name="Estimation", details="Phase 4", order=40)
+            # ... (add the other MilestonePhase.objects.create lines) ...
 
             messages.success(request, 'Direct project created successfully!')
             return redirect('projects:project_detail', pk=project.pk)
-    else:
-        customer_form = CustomerForm()
+        else:
+            messages.error(request, "Please correct the errors below.")
+    
+    else: # GET request
+        existing_customer_form = ExistingCustomerForm()
+        new_customer_form = CustomerForm()
         project_form = ProjectForm()
-        formset = ProjectItemFormSet(queryset=ProjectItem.objects.none())
+        formset = ProjectItemFormSet(queryset=ProjectItem.objects.none(), prefix='items') # Add prefix
 
     context = {
-        'customer_form': customer_form,
+        'existing_customer_form': existing_customer_form,
+        'new_customer_form': new_customer_form,
         'project_form': project_form,
-        'formset': formset
+        'formset': formset,
     }
     return render(request, 'projects/project_create_direct_form.html', context)
+
+
+
+@login_required
+@role_required('admin')
+def import_fitout_items(request, pk):
+    project = get_object_or_404(Project, pk=pk)
+
+    # We must ensure this project was created from a quotation
+    if not project.quotation:
+        messages.error(request, 'This project was not created from a quotation and has no items to import.')
+        return redirect('projects:project_edit', pk=project.pk)
+        
+    # Find the associated FITOUT quotation from the same enquiry
+    try:
+        fitout_quote = Quotation.objects.get(
+            enquiry=project.quotation.enquiry,
+            quote_type='FITOUT'
+        )
+    except Quotation.DoesNotExist:
+        messages.warning(request, 'No corresponding Fitout quotation was found for this project to import from.')
+        return redirect('projects:project_edit', pk=project.pk)
+
+    # Only proceed on a POST request for safety
+    if request.method == 'POST':
+        items_copied_count = 0
+        for item in fitout_quote.items.all():
+            # For safety, check if an identical item already exists
+            if not ProjectItem.objects.filter(project=project, description=item.description).exists():
+                ProjectItem.objects.create(
+                    project=project,
+                    description=item.description,
+                    quantity=item.quantity,
+                    unit=item.unit,
+                    unit_price=item.unit_price
+                )
+                items_copied_count += 1
+        
+        if items_copied_count > 0:
+            messages.success(request, f'{items_copied_count} item(s) were successfully copied from the Fitout quotation.')
+        else:
+            messages.info(request, 'No new items to copy. The project scope may already be up to date.')
+
+    # Always redirect back to the edit page
+    return redirect('projects:project_edit', pk=project.pk)

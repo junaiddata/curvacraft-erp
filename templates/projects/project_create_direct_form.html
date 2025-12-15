@@ -1,28 +1,61 @@
 <!-- templates/projects/project_create_direct_form.html -->
 {% extends "base.html" %}
 {% block content %}
-<h1>Create Direct Project</h1>
-<p>Use this form to create a project that does not have a prior enquiry or quotation.</p>
-
-<form method="post">
-    {% csrf_token %}
+<style>
+    /* Tab styles */
+    .customer-tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border-light); }
+    .tab-btn { padding: 0.75rem 1.5rem; border: 1px solid transparent; border-bottom: none; border-radius: 6px 6px 0 0; cursor: pointer; background: transparent; font-weight: 500; color: var(--text-secondary); }
+    .tab-btn.active { background: var(--bg-secondary); border-color: var(--border-light); border-bottom-color: var(--bg-secondary); color: var(--primary-dark); }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
     
-    <div class="card">
-        <div class="card-header"><h3>Customer Details</h3></div>
-        {{ customer_form.as_p }}
-    </div>
+    /* Formset table styles */
+    .item-form-row input[type="checkbox"] { display: none; }
+    .delete-btn { background-color: var(--error); color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
+    .item-form-row.marked-for-deletion { opacity: 0.4; background-color: #fee2e2; }
+    .item-form-row.marked-for-deletion input,
+    .item-form-row.marked-for-deletion textarea { pointer-events: none; }
+</style>
 
-    <div class="card">
-        <div class="card-header"><h3>Project Details</h3></div>
-        {{ project_form.as_p }}
+<div style="max-width: 900px; margin: 0 auto;">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h1>Create Direct Project</h1>
+        <a href="{% url 'projects:dashboard' %}">&larr; Back to Project List</a>
     </div>
+    <p class="text-muted">For projects without a prior enquiry or quotation.</p>
 
-       <!-- THIS IS THE COMPLETED SECTION -->
+    <form method="post">
+        {% csrf_token %}
+        
+        <!-- Customer Details Card with Tabs -->
+        <div class="card">
+            <div class="card-header"><h3>Customer Details</h3></div>
+            
+            <div class="customer-tabs">
+                <button type="button" class="tab-btn active" data-tab="existing">Existing Customer</button>
+                <button type="button" class="tab-btn" data-tab="new">New Customer</button>
+            </div>
+
+            <div id="tab-existing" class="tab-content active">
+                {{ existing_customer_form.as_p }}
+            </div>
+
+            <div id="tab-new" class="tab-content">
+                {{ new_customer_form.as_p }}
+            </div>
+            <input type="hidden" name="form_type" value="existing" id="form_type_input">
+        </div>
+
+        <!-- Project Details Card -->
+        <div class="card">
+            <div class="card-header"><h3>Project Details</h3></div>
+            {{ project_form.as_p }}
+        </div>
+
+        <!-- Project Scope & Budget Card -->
         <div class="card">
             <div class="card-header"><h3>Project Scope & Budget</h3></div>
-            
             {{ formset.management_form }}
-            
             <table id="items-table" class="data-table">
                 <thead>
                     <tr>
@@ -76,20 +109,50 @@
     </form>
 </div>
 
-
-
-<!-- The add/delete item script from quotation_form.html goes here -->
+<!-- All JavaScript combined and corrected -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    
+    // --- PART 1: TAB SWITCHING LOGIC (with disable/enable fix) ---
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+    const hiddenInput = document.getElementById('form_type_input');
+
+    function updateFormState(activeTabId) {
+        tabContents.forEach(content => {
+            const isActive = content.id === 'tab-' + activeTabId;
+            content.classList.toggle('active', isActive);
+            const formElements = content.querySelectorAll('input, select, textarea');
+            formElements.forEach(element => {
+                element.disabled = !isActive;
+            });
+        });
+        if (hiddenInput) {
+            hiddenInput.disabled = false; // Always keep the hidden input enabled
+        }
+    }
+
+    tabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const tabId = this.getAttribute('data-tab');
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+            if (hiddenInput) {
+                hiddenInput.value = tabId;
+            }
+            updateFormState(tabId);
+        });
+    });
+
+    // Initialize the form state on page load
+    updateFormState('existing');
+
+    // --- PART 2: FORMSET ADD/DELETE LOGIC ---
     const formListBody = document.getElementById('item-form-list');
     const emptyFormTemplate = document.getElementById('empty-form-template').innerHTML;
+    const totalFormsInput = document.getElementById('id_items-TOTAL_FORMS'); // Prefix is 'items' from the view
     
-    // The default prefix for an inline formset is the child model's name + '-set'.
-    // In our case, it will be 'projectitem_set-TOTAL_FORMS' if no prefix is set in the view.
-    // Let's make it robust by finding it.
-    const totalFormsInput = document.querySelector('input[name$="-TOTAL_FORMS"]');
-    
-    // --- ADD ITEM LOGIC ---
+    // Add Item Logic
     document.getElementById('add-item-form').addEventListener('click', function() {
         if (totalFormsInput) {
             let formNum = parseInt(totalFormsInput.value);
@@ -99,15 +162,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // --- DELETE ITEM LOGIC ---
+    // Delete Item Logic
     formListBody.addEventListener('click', function(event) {
         if (event.target && event.target.classList.contains('delete-btn')) {
             const row = event.target.closest('.item-form-row');
             
             if (row && !row.querySelector('input[name$="-id"][value]')) {
-                if (confirm('Are you sure you want to remove this new item?')) {
-                    row.remove();
-                }
+                if (confirm('Are you sure you want to remove this new item?')) { row.remove(); }
                 return;
             }
             
@@ -122,4 +183,5 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
 {% endblock %}
