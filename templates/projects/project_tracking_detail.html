@@ -15,6 +15,7 @@
     </div>
     <div>
         <!-- The button to go to the EDIT page -->
+        <a href="{% url 'projects:project_tracking_pdf' pk=project.pk %}" target="_blank" class="btn-secondary">Export as PDF</a>
         <a href="{% url 'projects:project_tracking_edit' pk=project.pk %}" class="btn-secondary">Edit Schedule</a>
         <a href="{% url 'projects:project_detail' pk=project.pk %}" style="margin-left: 1rem;">&larr; Back to Project Overview</a>
     </div>

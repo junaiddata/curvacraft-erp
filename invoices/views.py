@@ -149,7 +149,7 @@ def invoice_pdf_view(request, pk):
         leftMargin=0.75*inch,
         topMargin=1.2*inch, 
         bottomMargin=1.5*inch,
-        title=f"Invoice {invoice.invoice_number}",
+        title=f"Tax Invoice {invoice.invoice_number}",
         author="CURVACRAFT DESIGN & BUILD STUDIO"
     )
     
@@ -187,7 +187,7 @@ def invoice_pdf_view(request, pk):
         logo = Paragraph("<b>CURVACRAFT</b>", styles['Normal'])
 
     invoice_info_html = f"""
-        <font size='14' color='#{accent_color.hexval()[2:]}'><b>INVOICE</b></font><br/>
+        <font size='14' color='#{accent_color.hexval()[2:]}'><b>TAX INVOICE</b></font><br/>
         <font size='9' color='#{secondary_color.hexval()[2:]}'>#{invoice.invoice_number}</font><br/>
         <font size='9' color='#{secondary_color.hexval()[2:]}'>{invoice.date:%d %B %Y}</font>
     """
@@ -199,12 +199,14 @@ def invoice_pdf_view(request, pk):
     story.append(LineSeparator(content_width, 2, accent_color))
     story.append(Spacer(1, 0.3*inch))
     
-    # 2. CLIENT & COMPANY INFO
+# 2. CLIENT AND COMPANY INFORMATION
     client_info = f"""
         <font color='#{accent_color.hexval()[2:]}' size='11'><b>INVOICE TO</b></font><br/>
         <font size='10'><b>{invoice.project.customer.name}</b></font><br/>
+        {invoice.project.customer.address.replace('\n', '<br/>') if invoice.project.customer.address else ''}<br/>
         {invoice.project.customer.email or ''}<br/>
         {invoice.project.customer.phone_number or ''}
+        {invoice.project.customer.trn_number and f"<br/><b>TRN:</b> {invoice.project.customer.trn_number}" or ''}
     """
     company_info = f"""
         <font color='#{accent_color.hexval()[2:]}' size='11'><b>FROM</b></font><br/>
@@ -213,11 +215,24 @@ def invoice_pdf_view(request, pk):
         info@curvacraft.com<br/>
         www.curvacraft.com
     """
-    info_table = Table([[Paragraph(client_info, styles['ClientInfo']), Paragraph(company_info, styles['ClientInfo'])]], colWidths=[content_width / 2, content_width / 2])
-    info_table.setStyle(TableStyle([('BACKGROUND', (0,0), (-1,-1), light_gray), ('BOX', (0,0), (-1,-1), 1, border_color), ('PADDING', (0,0), (-1,-1), 12)]))
+
+    info_data = [[
+        Paragraph(client_info, styles['ClientInfo']), 
+        Paragraph(company_info, styles['ClientInfo'])
+    ]]
+
+    info_table = Table(info_data, colWidths=[content_width / 2, content_width / 2])
+
+    # --- THIS IS THE FIX ---
+    info_table.setStyle(TableStyle([
+        ('VALIGN', (0,0), (-1,-1), 'TOP'), # <-- ADD THIS LINE
+        ('BACKGROUND', (0,0), (-1,-1), light_gray),
+        ('BOX', (0,0), (-1,-1), 1, border_color),
+        ('PADDING', (0,0), (-1,-1), 12)
+    ]))
+
     story.append(info_table)
     story.append(Spacer(1, 0.4*inch))
-    
     # 3. INVOICE DETAILS
     invoice_details_html = f"<font color='#{secondary_color.hexval()[2:]}'><b>Project:</b></font> {invoice.project.title}<br/>"
     if invoice.due_date:

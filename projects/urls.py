@@ -18,8 +18,10 @@ urlpatterns = [
     path('project/<int:pk>/tracking/', views.project_tracking_detail, name='project_tracking_detail'),
     # This is the NEW URL for the form/edit page
     path('project/<int:pk>/tracking/edit/', views.project_tracking_edit, name='project_tracking_edit'),
+    path('project/<int:pk>/tracking/pdf/', views.project_tracking_pdf, name='project_tracking_pdf'),
 
     path('create-direct/', views.project_create_direct, name='project_create_direct'),
     path('project/<int:pk>/import-fitout/', views.import_fitout_items, name='import_fitout_items'),
+
 
 ]

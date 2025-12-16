@@ -19,27 +19,38 @@
     .task-row.marked-for-deletion { opacity: 0.4; background-color: #fee2e2; }
 </style>
 
-<form method="post">
-    {% csrf_token %}
-    <!-- Management form for the PARENT (Phase) formset -->
-    {{ phase_formset.management_form }}
-    
-    {% for phase_form, task_formset in phase_and_formsets_zipped %}
-    <div class="card phase-card" style="padding: 0;">
+    <form method="post">
+        {% csrf_token %}
+        <!-- Management form for the PARENT (Phase) formset -->
+        {{ phase_formset.management_form }}
+        
+        {% for phase_form, task_formset in phase_and_formsets_zipped %}
+        <div class="card phase-card" style="padding: 0;">
+            
+            <!-- Hidden ID for the phase_form -->
+            {{ phase_form.id }}
+            
+            <!-- Phase Header (with editable timeline) -->
+    <!-- Phase Header (with ALL editable fields) -->
+    <div class="phase-header-form" style="background-color: #e9ecef; padding: 1rem; font-weight: bold; display: grid; grid-template-columns: 1.5fr 2fr 1.5fr; gap: 1rem; align-items: center;">
         
         <!-- Hidden ID for the phase_form -->
         {{ phase_form.id }}
-        
-        <!-- Phase Header (with editable timeline) -->
-        <div class="phase-header-form">
-            <!-- Render the read-only fields as hidden inputs -->
-            <div style="display: none;">{{ phase_form.details }}{{ phase_form.name }}</div>
-            <!-- Display their values for the user -->
-            <span>{{ phase_form.instance.details }}</span>
-            <span>{{ phase_form.instance.name }}</span>
-            <!-- Render the editable timeline input -->
-            <div>{{ phase_form.default_timeline }}</div>
+
+        <!-- Render the editable input fields -->
+        <div>
+            <label for="{{ phase_form.details.id_for_label }}" style="font-size: 0.8rem; color: #6c757d;">Details (e.g., Phase/Module)</label>
+            {{ phase_form.details }}
         </div>
+        <div>
+            <label for="{{ phase_form.name.id_for_label }}" style="font-size: 0.8rem; color: #6c757d;">Phase Name</label>
+            {{ phase_form.name }}
+        </div>
+        <div>
+            <label for="{{ phase_form.default_timeline.id_for_label }}" style="font-size: 0.8rem; color: #6c757d;">Timeline</label>
+            {{ phase_form.default_timeline }}
+        </div>
+    </div>
         
         <div style="padding: 1.5rem;">
             <!-- Management form for the NESTED (Task) formset -->

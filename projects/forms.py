@@ -62,11 +62,11 @@ class MilestonePhaseForm(forms.ModelForm):
         # Change 'timeline' to 'default_timeline' to match the model
         fields = ['details', 'name', 'default_timeline']
         
-        widgets = {
-            'details': forms.TextInput(attrs={'readonly': True, 'style': 'border:none; background:transparent;'}),
-            'name': forms.TextInput(attrs={'readonly': True, 'style': 'border:none; background:transparent;'}),
-            # The widget for 'default_timeline' will be a standard text input, which is what we want.
-        }
+        # widgets = {
+        #     'details': forms.TextInput(attrs={'readonly': True, 'style': 'border:none; background:transparent;'}),
+        #     'name': forms.TextInput(attrs={'readonly': True, 'style': 'border:none; background:transparent;'}),
+        #     # The widget for 'default_timeline' will be a standard text input, which is what we want.
+        # }
 
 # This is a model formset for ALL the phases belonging to a project.
 MilestonePhaseFormSet = forms.modelformset_factory(

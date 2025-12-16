@@ -17,6 +17,15 @@ from users.decorators import admin_required,role_required # Import the decorator
 from enquiries.forms import CustomerForm ,ExistingCustomerForm # Import the CustomerForm
 from enquiries.models import Customer
 
+import io
+from django.http import FileResponse
+from invoices.pdf_utils import NumberedCanvas, process_logo, LineSeparator # Reuse our helpers
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter, landscape # Use landscape for wide tables
+from reportlab.lib.units import inch
+
 
 @login_required
 def dashboard(request):
@@ -318,6 +327,359 @@ def project_tracking_detail(request, pk):
     }
     return render(request, 'projects/project_tracking_detail.html', context)
 
+import io
+import datetime
+import requests
+from io import BytesIO
+from PIL import Image as PILImage, ImageOps
+from django.http import FileResponse
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter, landscape
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT
+from reportlab.lib.units import inch
+from reportlab.platypus import (
+    SimpleDocTemplate,
+    Paragraph,
+    Spacer,
+    Table,
+    TableStyle,
+    Image
+)
+from reportlab.pdfgen import canvas
+
+
+# ============================================================
+# COLOR PALETTE (Light Purple/Lavender Theme - As Per Design)
+# ============================================================
+COLORS = {
+    'header_bg': colors.HexColor("#D8D8F0"),          # Light lavender (header row)
+    'phase_bg': colors.HexColor("#E8E8F8"),           # Lighter lavender (phase rows)
+    'row_white': colors.HexColor("#FFFFFF"),          # White (task rows)
+    'border': colors.HexColor("#000000"),             # Black borders
+    'text_dark': colors.HexColor("#000000"),          # Black text
+    'text_brown': colors.HexColor("#5D4E37"),         # Brown text for headers
+}
+
+
+class NumberedCanvas(canvas.Canvas):
+    """Custom Canvas for page numbering."""
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._saved_page_states = []
+
+    def showPage(self):
+        self._saved_page_states.append(dict(self.__dict__))
+        self._startPage()
+
+    def save(self):
+        num_pages = len(self._saved_page_states)
+        for state in self._saved_page_states:
+            self.__dict__.update(state)
+            self.draw_page_number(num_pages)
+            super().showPage()
+        super().save()
+
+    def draw_page_number(self, page_count):
+        page_width, page_height = landscape(letter)
+        self.setFont("Helvetica", 9)
+        self.setFillColor(colors.HexColor("#666666"))
+        self.drawRightString(
+            page_width - 0.5 * inch,
+            0.4 * inch,
+            f"Page {self._pageNumber} of {page_count}"
+        )
+
+
+def process_logo_inverted(logo_url, max_width=1.5*inch, max_height=0.6*inch):
+    """
+    Fetches logo from URL, inverts colors, returns ReportLab Image or None.
+    """
+    try:
+        response = requests.get(logo_url, timeout=10)
+        response.raise_for_status()
+        img_data = BytesIO(response.content)
+        
+        pil_img = PILImage.open(img_data)
+        
+        if pil_img.mode != 'RGBA':
+            pil_img = pil_img.convert('RGBA')
+        
+        r, g, b, a = pil_img.split()
+        rgb_image = PILImage.merge('RGB', (r, g, b))
+        inverted_rgb = ImageOps.invert(rgb_image)
+        r_inv, g_inv, b_inv = inverted_rgb.split()
+        pil_img = PILImage.merge('RGBA', (r_inv, g_inv, b_inv, a))
+        
+        img_width, img_height = pil_img.size
+        aspect = img_width / img_height
+        
+        if img_width / max_width > img_height / max_height:
+            width = max_width
+            height = max_width / aspect
+        else:
+            height = max_height
+            width = max_height * aspect
+        
+        output = BytesIO()
+        pil_img.save(output, format='PNG')
+        output.seek(0)
+        
+        return Image(output, width=width, height=height)
+    
+    except Exception as e:
+        print(f"Logo processing error: {e}")
+        return None
+
+
+@login_required
+@role_required('admin')
+def project_tracking_pdf(request, pk):
+    """Generates a professional Project Milestone Tracking PDF matching the design."""
+    project = get_object_or_404(Project, pk=pk)
+    phases = project.milestone_phases.prefetch_related('tasks')
+
+    buf = io.BytesIO()
+    
+    # Landscape with good margins
+    doc = SimpleDocTemplate(
+        buf,
+        pagesize=landscape(letter),
+        rightMargin=0.6 * inch,
+        leftMargin=0.6 * inch,
+        topMargin=0.5 * inch,
+        bottomMargin=0.6 * inch
+    )
+    
+    page_width = landscape(letter)[0] - 1.2 * inch  # Available width
+
+    # --- STYLES ---
+    styles = getSampleStyleSheet()
+
+    custom_styles = {
+        'PTMainTitle': ParagraphStyle(
+            name='PTMainTitle',
+            fontName='Helvetica-Bold',
+            fontSize=18,
+            alignment=TA_CENTER,
+            textColor=COLORS['text_dark'],
+            spaceAfter=0
+        ),
+        'PTLogoText': ParagraphStyle(
+            name='PTLogoText',
+            fontName='Helvetica',
+            fontSize=14,
+            alignment=TA_LEFT,
+            textColor=COLORS['text_dark'],
+            leading=18
+        ),
+        'PTProjectLabel': ParagraphStyle(
+            name='PTProjectLabel',
+            fontName='Helvetica',
+            fontSize=11,
+            alignment=TA_LEFT,
+            textColor=COLORS['text_dark'],
+            leading=14
+        ),
+        'PTTableHeader': ParagraphStyle(
+            name='PTTableHeader',
+            fontName='Helvetica-Bold',
+            fontSize=10,
+            alignment=TA_LEFT,
+            textColor=COLORS['text_dark'],
+            leading=12
+        ),
+        'PTTableHeaderCenter': ParagraphStyle(
+            name='PTTableHeaderCenter',
+            fontName='Helvetica-Bold',
+            fontSize=10,
+            alignment=TA_CENTER,
+            textColor=COLORS['text_dark'],
+            leading=12
+        ),
+        'PTPhaseCell': ParagraphStyle(
+            name='PTPhaseCell',
+            fontName='Helvetica-Bold',
+            fontSize=10,
+            alignment=TA_LEFT,
+            textColor=COLORS['text_dark'],
+            leading=12
+        ),
+        'PTTableCell': ParagraphStyle(
+            name='PTTableCell',
+            fontName='Helvetica',
+            fontSize=10,
+            alignment=TA_LEFT,
+            textColor=COLORS['text_dark'],
+            leading=12
+        ),
+        'PTTableCellCenter': ParagraphStyle(
+            name='PTTableCellCenter',
+            fontName='Helvetica',
+            fontSize=10,
+            alignment=TA_CENTER,
+            textColor=COLORS['text_dark'],
+            leading=12
+        ),
+    }
+
+    for style_name, style in custom_styles.items():
+        if style_name not in styles.byName:
+            styles.add(style)
+
+    # --- BUILD STORY ---
+    story = []
+
+    # ============================================================
+    # HEADER SECTION (Logo on left, Title on right)
+    # ============================================================
+    
+    logo_url = "https://curvacraft.com/wp-content/uploads/2024/10/Curvacraft-logo-1024x255.webp"
+    logo = process_logo_inverted(logo_url, max_width=1.8*inch, max_height=0.7*inch)
+    
+    # Logo with company name
+    if logo:
+        logo_cell = logo
+    else:
+        logo_cell = Paragraph("<b>CURVACRAFT</b>", styles['PTLogoText'])
+    
+    # Title
+    title_cell = Paragraph("<b>Project Milestone Tracking</b>", styles['PTMainTitle'])
+    
+    # Header table
+    header_data = [[logo_cell, title_cell]]
+    header_table = Table(header_data, colWidths=[3.0*inch, page_width - 3.0*inch])
+    header_table.setStyle(TableStyle([
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('ALIGN', (0, 0), (0, 0), 'LEFT'),
+        ('ALIGN', (1, 0), (1, 0), 'CENTER'),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
+    ]))
+    story.append(header_table)
+    story.append(Spacer(1, 0.25 * inch))
+
+    # ============================================================
+    # PROJECT NAME
+    # ============================================================
+    
+    project_label = Paragraph(f"<b>Project:</b> {project.title}", styles['PTProjectLabel'])
+    story.append(project_label)
+    story.append(Spacer(1, 0.3 * inch))
+
+    # ============================================================
+    # MILESTONE TABLE
+    # ============================================================
+    
+    # Column widths (matching your design proportions)
+    col_widths = [
+        0.8 * inch,     # Sl.No
+        4.0 * inch,     # Design Phases
+        1.5 * inch,     # Timelines as per contract
+        1.5 * inch,     # Invoices Submitted
+        1.7 * inch,     # Amount received Date
+    ]
+    
+    # Scale to fit page width
+    total_col_width = sum(col_widths)
+    scale_factor = page_width / total_col_width
+    col_widths = [w * scale_factor for w in col_widths]
+
+    # Table header row
+    table_data = [
+        [
+            Paragraph('<b>Sl.No</b>', styles['PTTableHeader']),
+            Paragraph('<b>Design Phases</b>', styles['PTTableHeader']),
+            Paragraph('<b>Timelines as per<br/>contract</b>', styles['PTTableHeader']),
+            Paragraph('<b>Invoices Submitted</b>', styles['PTTableHeader']),
+            Paragraph('<b>Amount received Date</b>', styles['PTTableHeader']),
+        ]
+    ]
+    
+    # Base table styles
+    table_style = [
+        # Header styling (light lavender)
+        ('BACKGROUND', (0, 0), (-1, 0), COLORS['header_bg']),
+        ('ALIGN', (0, 0), (-1, 0), 'LEFT'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        
+        # Good padding for readability
+        ('TOPPADDING', (0, 0), (-1, -1), 8),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+        ('LEFTPADDING', (0, 0), (-1, -1), 10),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 10),
+        
+        # Black grid borders
+        ('GRID', (0, 0), (-1, -1), 1, COLORS['border']),
+    ]
+    
+    current_row_index = 1
+
+    for phase in phases:
+        # --------------------------------------------------------
+        # PHASE HEADER ROW (Light lavender background)
+        # --------------------------------------------------------
+        phase_details = phase.details if phase.details else ''
+        phase_name = phase.name if phase.name else ''
+        phase_timeline = phase.default_timeline if phase.default_timeline else ''
+        
+        phase_row_data = [
+            Paragraph(f"<b>{phase_details}</b>", styles['PTPhaseCell']),
+            Paragraph(f"<b>{phase_name}</b>", styles['PTPhaseCell']),
+            Paragraph(f"<b>{phase_timeline}</b>", styles['PTPhaseCell']),
+            '',
+            ''
+        ]
+        table_data.append(phase_row_data)
+        
+        # Phase row styling
+        table_style.append(
+            ('BACKGROUND', (0, current_row_index), (-1, current_row_index), COLORS['phase_bg'])
+        )
+        current_row_index += 1
+
+        # --------------------------------------------------------
+        # TASK ROWS (White background)
+        # --------------------------------------------------------
+        task_list = list(phase.tasks.all())
+        
+        for idx, task in enumerate(task_list):
+            sl_no = task.sl_no if task.sl_no else str(idx + 1)
+            
+            description = task.description or ''
+            description = description.replace('\n', '<br/>')
+            
+            timeline_date = task.timeline_date.strftime('%d/%m/%Y') if task.timeline_date else ''
+            invoices = task.invoices_submitted if task.invoices_submitted else ''
+            amount_date = task.amount_received_date.strftime('%d/%m/%Y') if task.amount_received_date else ''
+            
+            task_row_data = [
+                Paragraph(sl_no, styles['PTTableCellCenter']),
+                Paragraph(description, styles['PTTableCell']),
+                Paragraph(timeline_date, styles['PTTableCell']),
+                Paragraph(invoices, styles['PTTableCellCenter']),
+                Paragraph(amount_date, styles['PTTableCell']),
+            ]
+            table_data.append(task_row_data)
+            
+            # White background for task rows
+            table_style.append(
+                ('BACKGROUND', (0, current_row_index), (-1, current_row_index), COLORS['row_white'])
+            )
+            current_row_index += 1
+
+    # Create table with repeat header on new pages
+    milestone_table = Table(table_data, colWidths=col_widths, repeatRows=1)
+    milestone_table.setStyle(TableStyle(table_style))
+    story.append(milestone_table)
+
+    # --- BUILD PDF ---
+    doc.build(story, canvasmaker=NumberedCanvas)
+
+    buf.seek(0)
+    filename = f"Milestone_Tracking_{project.title.replace(' ', '_')}.pdf"
+    return FileResponse(buf, as_attachment=True, filename=filename)
 
 # --- THIS IS YOUR RENAMED VIEW for the form/edit page ---
 # projects/views.py
@@ -399,7 +761,12 @@ def project_create_direct(request):
             if new_customer_form.is_valid():
                 customer_to_use, created = Customer.objects.get_or_create(
                     email=new_customer_form.cleaned_data['email'],
-                    defaults={'name': new_customer_form.cleaned_data['name']}
+                    defaults={
+                        'name': new_customer_form.cleaned_data['name'],
+                        'phone_number': new_customer_form.cleaned_data['phone_number'],
+                        'address': new_customer_form.cleaned_data['address'],
+                        'trn_number': new_customer_form.cleaned_data['trn_number'],
+                    }
                 )
 
         # Now, validate the project and item forms

@@ -18,7 +18,7 @@ class CustomerForm(forms.ModelForm):
     """This is now the 'NewCustomerForm'."""
     class Meta:
         model = Customer
-        fields = ['name', 'email', 'phone_number', 'address']
+        fields = ['name', 'email', 'phone_number', 'address', 'trn_number']
 
 class EnquiryForm(forms.ModelForm):
     class Meta:

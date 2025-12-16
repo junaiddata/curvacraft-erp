@@ -44,7 +44,8 @@ def enquiry_create(request):
                     defaults={
                         'name': new_customer_form.cleaned_data['name'],
                         'phone_number': new_customer_form.cleaned_data['phone_number'],
-                        'address': new_customer_form.cleaned_data['address']
+                        'address': new_customer_form.cleaned_data['address'],
+                        'trn_number': new_customer_form.cleaned_data['trn_number'],
                     }
                 )
                 is_customer_valid = True
