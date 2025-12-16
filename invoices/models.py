@@ -29,7 +29,12 @@ class Invoice(models.Model):
                 last_seq = int(last_invoice.invoice_number[-3:])
                 new_seq = last_seq + 1
             else:
-                new_seq = 1
+                if current_year == 2025: # Or whatever the current year is for you
+                    # ...and the year is 2025, start the count at 27.
+                    new_seq = 27
+                else:
+                    # ...for any other future year (2026, 2027), start the count at 1.
+                    new_seq = 1
             self.invoice_number = f'CURV-{current_year}{new_seq:03d}'
         super().save(*args, **kwargs)
 
