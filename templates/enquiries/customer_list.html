@@ -1,0 +1,23 @@
+<!-- templates/enquiries/customer_list.html -->
+{% extends "base.html" %}
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center;">
+    <h1>Customers</h1>
+    <a href="{% url 'enquiries:enquiry_create' %}"><button>+ Add New Customer (via Enquiry)</button></a>
+</div>
+<div class="table-container" style="margin-top: 2rem;">
+    <table class="data-table">
+        <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Actions</th></tr></thead>
+        <tbody>
+            {% for customer in customers %}
+            <tr>
+                <td>{{ customer.name }}</td>
+                <td>{{ customer.email }}</td>
+                <td>{{ customer.phone_number }}</td>
+                <td><a href="{% url 'enquiries:customer_detail' pk=customer.pk %}"><button class="btn-secondary">View Details</button></a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

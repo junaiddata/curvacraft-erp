@@ -1,0 +1,16 @@
+<!-- templates/enquiries/customer_edit_form.html -->
+{% extends "base.html" %}
+{% block content %}
+<div style="max-width: 700px; margin: 0 auto;">
+    <h1>Edit Customer: {{ customer.name }}</h1>
+    <div class="card" style="margin-top: 2rem;">
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <div style="text-align: right; margin-top: 1.5rem;">
+                <button type="submit">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

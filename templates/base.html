@@ -760,6 +760,11 @@
                                 Quotations
                             </a>
                         </li>
+                                                <li>
+                            <a href="{% url 'enquiries:customer_list' %}" class="{% if 'customer' in request.resolver_match.url_name %}active{% endif %}">
+                                Customers
+                            </a>
+                        </li>
                         <li>
                             <a href="{% url 'accounts:dashboard' %}" class="{% if 'accounts' in request.resolver_match.namespace %}active{% endif %}">
                                 Accounts
@@ -805,6 +810,7 @@
                                 Quotations
                             </a>
                         </li>
+
                     </ul>
                 </nav>
             </aside>

@@ -212,8 +212,9 @@ def invoice_pdf_view(request, pk):
         <font color='#{accent_color.hexval()[2:]}' size='11'><b>FROM</b></font><br/>
         <font size='10'><b>CURVACRAFT DESIGN & BUILD STUDIO</b></font><br/>
         Studio Management Division<br/>
-        info@curvacraft.com<br/>
+        reachout@curvacraft.com<br/>
         www.curvacraft.com
+        TRN : 105227203400003
     """
 
     info_data = [[

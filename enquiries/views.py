@@ -151,3 +151,67 @@ def enquiry_delete(request, pk):
     # For a GET request, show the confirmation page
     context = {'enquiry': enquiry}
     return render(request, 'enquiries/enquiry_confirm_delete.html', context)
+
+
+
+# ==================================
+# CUSTOMER MANAGEMENT VIEWS
+# ==================================
+
+@login_required
+@role_required('admin', 'staff')
+def customer_list(request):
+    """Displays a searchable list of all customers."""
+    customers = Customer.objects.all().order_by('name')
+    context = {'customers': customers}
+    return render(request, 'enquiries/customer_list.html', context)
+
+@login_required
+@role_required('admin', 'staff')
+def customer_detail(request, pk):
+    """Displays details for a single customer and lists their associated projects."""
+    customer = get_object_or_404(Customer, pk=pk)
+    # We prefetch related projects for efficiency
+    customer_projects = customer.projects.prefetch_related('quotation__enquiry').all()
+    context = {
+        'customer': customer,
+        'projects': customer_projects
+    }
+    return render(request, 'enquiries/customer_detail.html', context)
+
+@login_required
+@role_required('admin', 'staff')
+def customer_edit(request, pk):
+    """Handles editing an existing customer's details."""
+    customer = get_object_or_404(Customer, pk=pk)
+    if request.method == 'POST':
+        form = CustomerForm(request.POST, instance=customer)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f"Details for {customer.name} have been updated.")
+            return redirect('enquiries:customer_detail', pk=customer.pk)
+    else:
+        form = CustomerForm(instance=customer)
+        
+    context = {
+        'form': form,
+        'customer': customer
+    }
+    return render(request, 'enquiries/customer_edit_form.html', context)
+
+@login_required
+@role_required('admin') # Only admins can delete customers
+def customer_delete(request, pk):
+    """Handles the confirmation and deletion of a customer."""
+    customer = get_object_or_404(Customer, pk=pk)
+    if customer.projects.exists() or customer.enquiries.exists():
+        messages.error(request, f"Cannot delete {customer.name} because they are linked to existing projects or enquiries.")
+        return redirect('enquiries:customer_detail', pk=customer.pk)
+        
+    if request.method == 'POST':
+        customer.delete()
+        messages.warning(request, f"Customer {customer.name} has been permanently deleted.")
+        return redirect('enquiries:customer_list')
+        
+    context = {'customer': customer}
+    return render(request, 'enquiries/customer_confirm_delete.html', context)

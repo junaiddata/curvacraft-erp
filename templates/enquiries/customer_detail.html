@@ -1,0 +1,39 @@
+<!-- templates/enquiries/customer_detail.html -->
+{% extends "base.html" %}
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center;">
+    <h1>{{ customer.name }}</h1>
+    <div>
+        <a href="{% url 'enquiries:customer_edit' pk=customer.pk %}" class="btn-secondary">Edit Customer</a>
+        <a href="{% url 'enquiries:customer_list' %}" style="margin-left: 1rem;">&larr; Back to List</a>
+    </div>
+</div>
+
+<div class="card" style="margin-top: 2rem;">
+    <div class="card-header"><h3>Contact Information</h3></div>
+    <dl class="detail-list">
+        <dt>Email</dt><dd>{{ customer.email }}</dd>
+        <dt>Phone</dt><dd>{{ customer.phone_number|default:"-" }}</dd>
+        <dt>Address</dt><dd>{{ customer.address|linebreaksbr|default:"-" }}</dd>
+        <dt>TRN</dt><dd>{{ customer.trn_number|default:"-" }}</dd>
+    </dl>
+</div>
+
+<h2 style="margin-top: 2rem;">Associated Projects</h2>
+<div class="table-container">
+    <table class="data-table">
+        <thead><tr><th>Project Title</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody>
+            {% for project in projects %}
+            <tr>
+                <td>{{ project.title }}</td>
+                <td>{{ project.get_status_display }}</td>
+                <td><a href="{% url 'projects:project_detail' pk=project.pk %}"><button class="btn-secondary">View Project</button></a></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="3" class="text-center text-muted">No projects found for this customer.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
