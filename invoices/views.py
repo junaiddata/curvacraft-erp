@@ -213,7 +213,7 @@ def invoice_pdf_view(request, pk):
         <font size='10'><b>CURVACRAFT DESIGN & BUILD STUDIO</b></font><br/>
         Studio Management Division<br/>
         reachout@curvacraft.com<br/>
-        www.curvacraft.com
+        www.curvacraft.com<br/>
         TRN : 105227203400003
     """
 
