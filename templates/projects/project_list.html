@@ -94,6 +94,11 @@
                         <a href="{% url 'projects:project_detail' pk=project.pk %}">
                             <button type="button">View Details</button>
                         </a>
+     
+                       <a href="{% url 'projects:project_delete' pk=project.pk %}">
+                    <button type="button" class="btn-small" style="background: var(--error);">Delete</button>
+                </a>
+
                     </td>
                 </tr>
             {% empty %}

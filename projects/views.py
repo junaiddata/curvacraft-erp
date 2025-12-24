@@ -853,3 +853,28 @@ def import_fitout_items(request, pk):
 
     # Always redirect back to the edit page
     return redirect('projects:project_edit', pk=project.pk)
+
+
+
+
+
+
+@login_required
+@role_required('admin')
+def project_delete(request, pk):
+    """Handles the confirmation and deletion of a project."""
+    project = get_object_or_404(Project, pk=pk)
+    
+    # SAFETY CHECK: Prevent deletion if invoices exist.
+    if project.invoices.exists():
+        messages.error(request, f"Cannot delete '{project.title}' because it has invoices linked to it. Consider changing its status to 'Cancelled' instead.")
+        return redirect('projects:project_detail', pk=project.pk)
+        
+    if request.method == 'POST':
+        project_title = project.title
+        project.delete()
+        messages.warning(request, f"Project '{project_title}' and all its related tasks and reports have been permanently deleted.")
+        return redirect('projects:dashboard') # Redirect to the main project list
+        
+    context = {'project': project}
+    return render(request, 'projects/project_confirm_delete.html', context)

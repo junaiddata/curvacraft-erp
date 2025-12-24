@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from projects.models import Project
 from .models import Invoice
 from .forms import InvoiceForm, InvoiceItemFormSet , InvoiceStatusForm
-
+from users.decorators import role_required
 # PDF Generation Imports
 import io
 import requests
@@ -311,3 +311,28 @@ def invoice_pdf_view(request, pk):
     buf.seek(0)
     filename = f"Invoice_{invoice.invoice_number}_{invoice.project.customer.name.replace(' ', '_')}.pdf"
     return FileResponse(buf, as_attachment=True, filename=filename)
+
+
+
+
+@login_required
+@role_required('admin')
+def invoice_delete(request, pk):
+    """Handles the confirmation and deletion of a DRAFT invoice."""
+    invoice = get_object_or_404(Invoice, pk=pk)
+    project_pk = invoice.project.pk # Get the project pk before deleting
+
+    # For accounting integrity, only allow deletion of DRAFT invoices.
+    if invoice.status != 'DRAFT':
+        messages.error(request, "Only DRAFT invoices can be deleted. Please VOID this invoice instead.")
+        return redirect('invoices:invoice_detail', pk=invoice.pk)
+        
+    if request.method == 'POST':
+        invoice_number = invoice.invoice_number
+        invoice.delete()
+        messages.warning(request, f"Invoice {invoice_number} has been permanently deleted.")
+        # Redirect back to the project detail page
+        return redirect('projects:project_detail', pk=project_pk)
+        
+    context = {'invoice': invoice}
+    return render(request, 'invoices/invoice_confirm_delete.html', context)

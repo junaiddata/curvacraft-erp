@@ -23,5 +23,7 @@ urlpatterns = [
     path('create-direct/', views.project_create_direct, name='project_create_direct'),
     path('project/<int:pk>/import-fitout/', views.import_fitout_items, name='import_fitout_items'),
 
+    path('project/<int:pk>/delete/', views.project_delete, name='project_delete'),
+
 
 ]

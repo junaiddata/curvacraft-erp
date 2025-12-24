@@ -190,15 +190,43 @@
             <a href="{% url 'invoices:invoice_create' project_pk=project.pk %}">
                 <button type="button" style="width: 100%;">Create New Invoice</button>
             </a>
-            <h4 style="margin-top: 1.5rem;">Recent Invoices:</h4>
-            <ul style="list-style: none; padding-left: 0;">
-                {% for inv in project.invoices.all|slice:":5" %}
-                    <li>
-                        <a href="{% url 'invoices:invoice_detail' pk=inv.pk %}">{{ inv.invoice_number }}</a> - 
-                        <span class="text-muted">{{ inv.real_time_status }}</span>
-                    </li>
+        <h4 style="margin-top: 1.5rem; margin-bottom: 1rem;">Existing Invoices:</h4>
+        <table class="data-table" style="box-shadow: none; margin: 0 -1.5rem; width: calc(100% + 3rem);">
+            <thead>
+                <tr>
+                    <th>Invoice #</th>
+                    <th>Status</th>
+                    <th style="text-align: right;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for inv in project.invoices.all %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'invoices:invoice_detail' pk=inv.pk %}" style="font-weight: bold;">
+                                {{ inv.invoice_number }}
+                            </a>
+                        </td>
+                        <td><span class="text-muted">{{ inv.real_time_status }}</span></td>
+                        <td style="text-align: right;">
+                            <!-- Edit button is always available unless void -->
+                            {% if inv.status != 'VOID' %}
+                                <a href="{% url 'invoices:invoice_edit' pk=inv.pk %}"><button class="btn-secondary btn-small">Edit</button></a>
+                            {% endif %}
+                            
+                            <!-- Delete button only for DRAFT invoices -->
+                            {% if inv.status == 'DRAFT' %}
+                                <a href="{% url 'invoices:invoice_delete' pk=inv.pk %}"><button class="btn-small" style="background: var(--error);">Delete</button></a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="3" class="text-center text-muted">No invoices created yet.</td>
+                    </tr>
                 {% endfor %}
-            </ul>
+            </tbody>
+        </table>
         </div>
     </div>
 </div>
