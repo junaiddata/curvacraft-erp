@@ -1,0 +1,86 @@
+<!-- templates/purchase_orders/contractor_confirm_delete.html -->
+{% extends "base.html" %}
+{% block content %}
+<style>
+    .contractor-page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .contractor-page-header h1 {
+        margin: 0;
+        color: white;
+        font-size: 2rem;
+    }
+    .delete-card {
+        background: white;
+        border: 2px solid #fee2e2;
+        border-radius: 8px;
+        padding: 2rem;
+        box-shadow: 0 2px 4px rgba(239, 68, 68, 0.1);
+    }
+    .warning-box {
+        background: #fef3c7;
+        border: 2px solid #fbbf24;
+        border-radius: 6px;
+        padding: 1rem;
+        margin: 1.5rem 0;
+        color: #92400e;
+    }
+    .btn-danger {
+        background: #ef4444;
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: background 0.2s;
+        margin-right: 0.5rem;
+    }
+    .btn-danger:hover {
+        background: #dc2626;
+    }
+    .btn-secondary {
+        background: white;
+        color: #667eea;
+        border: 2px solid #667eea;
+        padding: 0.75rem 1.5rem;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+    .btn-secondary:hover {
+        background: #f9fafb;
+    }
+</style>
+
+<div class="contractor-page-header">
+    <h1>🗑️ Delete Contractor</h1>
+</div>
+
+<div class="delete-card">
+    <h2 style="color: #ef4444; margin-top: 0;">Are you sure?</h2>
+    <p>You are about to delete contractor <strong style="color: #667eea;">{{ contractor.name }}</strong>.</p>
+    <p style="color: #ef4444; font-weight: 600;">This action cannot be undone.</p>
+    
+    {% if contractor.purchase_orders.exists %}
+        <div class="warning-box">
+            <strong>⚠️ Warning:</strong> This contractor has {{ contractor.purchase_orders.count }} purchase order(s). 
+            Deleting will also delete all associated purchase orders.
+        </div>
+    {% endif %}
+
+    <form method="post" style="margin-top: 2rem;">
+        {% csrf_token %}
+        <button type="submit" class="btn-danger">Yes, Delete</button>
+        <a href="{% url 'purchase_orders:contractor_detail' pk=contractor.pk %}">
+            <button type="button" class="btn-secondary">Cancel</button>
+        </a>
+    </form>
+</div>
+{% endblock %}

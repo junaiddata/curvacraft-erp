@@ -6,6 +6,7 @@ from quotations.models import Quotation
 from progress.models import DailyProgress
 from django.db.models import Prefetch # Add this import
 from reports.models import DailyReport # Add this import
+from purchase_orders.models import PurchaseOrder
 
 
 
@@ -23,12 +24,14 @@ def home_view(request):
         pending_enquiries_count = Enquiry.objects.filter(status='PENDING').count()
         quotes_awaiting_acceptance = Quotation.objects.filter(status='SENT').count()
         reports_to_review_count = DailyProgress.objects.filter(status='SUBMITTED').count()
+        pending_pos_count = PurchaseOrder.objects.filter(status='PENDING').count()
 
         context = {
             'active_projects_count': active_projects_count,
             'pending_enquiries_count': pending_enquiries_count,
             'quotes_awaiting_acceptance': quotes_awaiting_acceptance,
             'reports_to_review_count': reports_to_review_count,
+            'pending_pos_count': pending_pos_count,
         }
         return render(request, 'core/admin_dashboard.html', context)
     

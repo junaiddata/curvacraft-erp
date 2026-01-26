@@ -1,0 +1,139 @@
+<!-- templates/purchase_orders/po_detail.html -->
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block content %}
+<a href="{% url 'purchase_orders:po_list' %}">&larr; Back to Purchase Orders</a>
+
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+    <div>
+        <h1>Purchase Order #{{ po.po_number }}</h1>
+        <h4>Contractor: {{ po.contractor.name }}</h4>
+    </div>
+    <div>
+        <!-- Action Buttons -->
+        <a href="{% url 'purchase_orders:po_edit' pk=po.pk %}"><button type="button">Edit</button></a>
+        <a href="{% url 'purchase_orders:po_pdf' pk=po.pk %}" target="_blank"><button type="button">Generate PDF</button></a>
+        <a href="{% url 'purchase_orders:po_delete' pk=po.pk %}"><button type="button" style="background-color: #dc3545;">Delete</button></a>
+    </div>
+</div>
+
+<!-- STATUS UPDATE -->
+<div style="background: #f8f9fa; padding: 1rem; border-radius: 6px; margin-bottom: 2rem;">
+    <form method="post" style="display:inline-flex; align-items: center; gap: 10px;">
+        {% csrf_token %}
+        <input type="hidden" name="update_status" value="1">
+        {{ status_form.status.label_tag }}
+        {{ status_form.status }}
+        <button type="submit">Update Status</button>
+    </form>
+</div>
+
+<!-- CONTRACTOR INFO -->
+<div style="background: #f8f9fa; padding: 1rem; border-radius: 6px; margin-bottom: 2rem;">
+    <h3>Contractor Information</h3>
+    <p><strong>Name:</strong> {{ po.contractor.name }}</p>
+    {% if po.contractor.contact_person %}<p><strong>Contact Person:</strong> {{ po.contractor.contact_person }}</p>{% endif %}
+    {% if po.contractor.email %}<p><strong>Email:</strong> {{ po.contractor.email }}</p>{% endif %}
+    {% if po.contractor.phone_number %}<p><strong>Phone:</strong> {{ po.contractor.phone_number }}</p>{% endif %}
+    {% if po.contractor.address %}<p><strong>Address:</strong> {{ po.contractor.address }}</p>{% endif %}
+    <a href="{% url 'purchase_orders:contractor_detail' pk=po.contractor.pk %}">View Contractor Details</a>
+</div>
+
+<!-- ITEMS TABLE -->
+<h3>Line Items</h3>
+<table style="width:100%; border-collapse: collapse;">
+    <thead style="background-color: #f4f4f4;">
+        <tr>
+            <th style="padding: 10px; text-align: left;">S/N</th>
+            <th style="padding: 10px; text-align: left;">Description</th>
+            <th style="padding: 10px; text-align: right;">Qty</th>
+            <th style="padding: 10px; text-align: left;">Unit</th>
+            <th style="padding: 10px; text-align: right;">Unit Price</th>
+            <th style="padding: 10px; text-align: right;">Line Total</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in po.items.all %}
+            <tr style="border-bottom: 1px solid #dee2e6;">
+                <td style="padding: 10px;">{{ forloop.counter }}</td>
+                <td style="padding: 10px;">{{ item.description|linebreaksbr }}</td>
+                <td style="padding: 10px; text-align: right;">{{ item.quantity|floatformat:2 }}</td>
+                <td style="padding: 10px;">{{ item.unit }}</td>
+                <td style="padding: 10px; text-align: right;">AED {{ item.unit_price|floatformat:2|intcomma }}</td>
+                <td style="padding: 10px; text-align: right;">AED {{ item.total_amount|floatformat:2|intcomma }}</td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="6" style="padding: 10px; text-align: center;">No items added yet.</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- TOTALS SECTION -->
+<div style="width: 40%; margin-left: auto; margin-top: 2rem; text-align: right;">
+    <table style="width: 100%;">
+        <tr>
+            <td style="padding: 8px;"><strong>Subtotal</strong></td>
+            <td style="padding: 8px;">AED {{ po.subtotal|floatformat:2|intcomma }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 8px;"><strong>VAT ({{ po.tax_percentage|floatformat:2 }}%)</strong></td>
+            <td style="padding: 8px;">AED {{ po.tax_amount|floatformat:2|intcomma }}</td>
+        </tr>
+        <tr style="font-size: 1.2rem; border-top: 2px solid #333;">
+            <td style="padding: 8px;"><strong>Grand Total (AED)</strong></td>
+            <td style="padding: 8px;"><strong>AED {{ po.grand_total|floatformat:2|intcomma }}</strong></td>
+        </tr>
+    </table>
+</div>
+
+<!-- RELATED DOCUMENTS SECTION -->
+<div style="margin-top: 3rem;">
+    <h3>Related Documents</h3>
+    
+    <!-- Upload Form -->
+    <form method="post" action="{% url 'purchase_orders:document_upload' pk=po.pk %}" enctype="multipart/form-data" style="margin-bottom: 1rem;">
+        {% csrf_token %}
+        {{ document_form.file.label_tag }}
+        {{ document_form.file }}
+        {{ document_form.description.label_tag }}
+        {{ document_form.description }}
+        <button type="submit">Upload Document</button>
+    </form>
+    
+    <!-- Documents List -->
+    {% if po.documents.all %}
+        <table style="width:100%; border-collapse: collapse;">
+            <thead style="background-color: #f4f4f4;">
+                <tr>
+                    <th style="padding: 10px; text-align: left;">File Name</th>
+                    <th style="padding: 10px; text-align: left;">Description</th>
+                    <th style="padding: 10px; text-align: left;">Uploaded</th>
+                    <th style="padding: 10px; text-align: left;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for doc in po.documents.all %}
+                    <tr style="border-bottom: 1px solid #dee2e6;">
+                        <td style="padding: 10px;">
+                            <a href="{{ doc.file.url }}" target="_blank">{{ doc.file.name|slice:"-50:" }}</a>
+                        </td>
+                        <td style="padding: 10px;">{{ doc.description|default:"-" }}</td>
+                        <td style="padding: 10px;">{{ doc.uploaded_at|date:"M d, Y H:i" }}</td>
+                        <td style="padding: 10px;">
+                            <form method="post" action="{% url 'purchase_orders:document_delete' pk=doc.pk %}" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" style="background-color: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No documents uploaded yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

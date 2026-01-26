@@ -1,0 +1,13 @@
+<!-- templates/purchase_orders/po_confirm_delete.html -->
+{% extends "base.html" %}
+{% block content %}
+<h1>Delete Purchase Order</h1>
+<p>Are you sure you want to delete Purchase Order <strong>{{ po.po_number }}</strong> for <strong>{{ po.subcontractor.name }}</strong>?</p>
+<p style="color: #dc3545;">This action cannot be undone.</p>
+
+<form method="post">
+    {% csrf_token %}
+    <button type="submit" style="background-color: #dc3545; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">Yes, Delete</button>
+    <a href="{% url 'purchase_orders:po_detail' pk=po.pk %}"><button type="button">Cancel</button></a>
+</form>
+{% endblock %}

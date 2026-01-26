@@ -57,6 +57,68 @@
     }
     .action-text h4 { margin: 0; font-size: 1.1rem; color: var(--primary-dark); }
     .action-text p { margin: 0; font-size: 0.875rem; color: var(--text-secondary); }
+
+
+    */
+    .invoice-actions-cell {
+        position: relative; /* This is the anchor for the dropdown */
+        text-align: right;
+    }
+    .invoice-actions-toggle {
+        background: transparent;
+        border: none;
+        padding: 8px;
+        cursor: pointer;
+        border-radius: 50%;
+    }
+    .invoice-actions-toggle:hover {
+        background-color: var(--bg-hover);
+    }
+    .invoice-actions-toggle svg {
+        width: 16px;
+        height: 16px;
+        fill: var(--text-secondary);
+        pointer-events: none; /* Prevents clicks on the icon itself */
+    }
+    .invoice-actions-menu {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        background: white;
+        border: 1px solid var(--border-light);
+        border-radius: 8px;
+        box-shadow: var(--shadow-md);
+        list-style: none;
+        padding: 0.5rem 0;
+        margin: 0.5rem 0 0 0;
+        min-width: 160px;
+        z-index: 10;
+        /* Start hidden */
+        opacity: 0;
+        transform: translateY(-10px);
+        pointer-events: none;
+        transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+    .invoice-actions-menu.show {
+        /* Become visible */
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto;
+    }
+    .invoice-actions-menu a {
+        display: block;
+        padding: 0.75rem 1.25rem;
+        color: var(--text-primary);
+        text-decoration: none;
+        font-size: 0.9rem;
+    }
+    .invoice-actions-menu a:hover {
+        background-color: var(--bg-hover);
+    }
+    .invoice-actions-menu .delete-link {
+        color: var(--error);
+        font-weight: 500;
+    }
 </style>
 
 <!-- Page Header with Edit Button -->
@@ -190,45 +252,87 @@
             <a href="{% url 'invoices:invoice_create' project_pk=project.pk %}">
                 <button type="button" style="width: 100%;">Create New Invoice</button>
             </a>
-        <h4 style="margin-top: 1.5rem; margin-bottom: 1rem;">Existing Invoices:</h4>
-        <table class="data-table" style="box-shadow: none; margin: 0 -1.5rem; width: calc(100% + 3rem);">
-            <thead>
-                <tr>
-                    <th>Invoice #</th>
-                    <th>Status</th>
-                    <th style="text-align: right;">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for inv in project.invoices.all %}
-                    <tr>
-                        <td>
-                            <a href="{% url 'invoices:invoice_detail' pk=inv.pk %}" style="font-weight: bold;">
-                                {{ inv.invoice_number }}
-                            </a>
-                        </td>
-                        <td><span class="text-muted">{{ inv.real_time_status }}</span></td>
-                        <td style="text-align: right;">
-                            <!-- Edit button is always available unless void -->
-                            {% if inv.status != 'VOID' %}
-                                <a href="{% url 'invoices:invoice_edit' pk=inv.pk %}"><button class="btn-secondary btn-small">Edit</button></a>
-                            {% endif %}
-                            
-                            <!-- Delete button only for DRAFT invoices -->
-                            {% if inv.status == 'DRAFT' %}
-                                <a href="{% url 'invoices:invoice_delete' pk=inv.pk %}"><button class="btn-small" style="background: var(--error);">Delete</button></a>
-                            {% endif %}
-                        </td>
-                    </tr>
-                {% empty %}
-                    <tr>
-                        <td colspan="3" class="text-center text-muted">No invoices created yet.</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+<h4 style="margin-top: 1.5rem; margin-bottom: 1rem;">Existing Invoices:</h4>
+<table class="data-table" style="box-shadow: none; margin: 0 -1.5rem; width: calc(100% + 3rem);">
+    <thead>
+        <tr>
+            <th>Invoice #</th>
+            <th>Status</th>
+            <th style="text-align: right;">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for inv in project.invoices.all %}
+            <tr>
+                <td>
+                    <a href="{% url 'invoices:invoice_detail' pk=inv.pk %}" style="font-weight: bold;">
+                        {{ inv.invoice_number }}
+                    </a>
+                </td>
+                <td><span class="text-muted">{{ inv.real_time_status }}</span></td>
+                
+                <td class="invoice-actions-cell">
+                    <!-- This button triggers the dropdown -->
+                    <button type="button" class="invoice-actions-toggle">
+                        <svg viewBox="0 0 24 24"><path d="M12,16A2,2 0 0,1 14,18A2,2 0 0,1 12,20A2,2 0 0,1 10,18A2,2 0 0,1 12,16M12,10A2,2 0 0,1 14,12A2,2 0 0,1 12,14A2,2 0 0,1 10,12A2,2 0 0,1 12,10M12,4A2,2 0 0,1 14,6A2,2 0 0,1 12,8A2,2 0 0,1 10,6A2,2 0 0,1 12,4Z" /></svg>
+                    </button>
+                    <!-- This is the menu that will show/hide -->
+                    <ul class="invoice-actions-menu">
+                        <li><a href="{% url 'invoices:invoice_detail' pk=inv.pk %}">View Details</a></li>
+                        {% if inv.status != 'VOID' %}
+                            <li><a href="{% url 'invoices:invoice_edit' pk=inv.pk %}">Edit</a></li>
+                        {% endif %}
+                        {% if inv.status == 'DRAFT' %}
+                            <li><a href="{% url 'invoices:invoice_delete' pk=inv.pk %}" class="delete-link">Delete</a></li>
+                        {% endif %}
+                    </ul>
+                </td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="3" class="text-center text-muted">No invoices created yet.</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
         </div>
     </div>
 </div>
+
+<script>
+    // Self-contained script for the invoice dropdowns
+    // This script can be safely placed at the end of your content block
+    document.addEventListener('click', function(event) {
+        // Find the toggle button that was clicked, if any
+        const toggleButton = event.target.closest('.invoice-actions-toggle');
+        
+        // Get all dropdown menus on the page
+        const allMenus = document.querySelectorAll('.invoice-actions-menu');
+        
+        // If a toggle button was clicked...
+        if (toggleButton) {
+            // Find the specific menu associated with THIS button
+            const parentCell = toggleButton.closest('.invoice-actions-cell');
+            const targetMenu = parentCell.querySelector('.invoice-actions-menu');
+            
+            // Check if the target menu is already open
+            const isAlreadyOpen = targetMenu.classList.contains('show');
+            
+            // First, close all menus
+            allMenus.forEach(menu => menu.classList.remove('show'));
+            
+            // If the target menu was NOT already open, open it
+            if (!isAlreadyOpen) {
+                targetMenu.classList.add('show');
+            }
+        } 
+        // If the click was anywhere else on the page (not a toggle button)
+        else {
+            // Close all menus
+            allMenus.forEach(menu => menu.classList.remove('show'));
+        }
+    });
+</script>
 
 {% endblock %}

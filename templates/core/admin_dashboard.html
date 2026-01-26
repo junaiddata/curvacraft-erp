@@ -69,6 +69,7 @@
     .icon-enquiries { background-color: rgba(255, 167, 38, 0.1); color: var(--warning); }
     .icon-quotes { background-color: rgba(102, 187, 106, 0.1); color: var(--success); }
     .icon-reports { background-color: rgba(93, 64, 55, 0.1); color: var(--primary-medium); }
+    .icon-pos { background-color: rgba(156, 39, 176, 0.1); color: #9c27b0; }
     
     .stat-title {
         font-size: 1rem;
@@ -154,6 +155,20 @@
         </div>
         <div class="stat-card-footer">
             Go to Review &rarr;
+        </div>
+    </a>
+
+    <!-- Pending Purchase Orders Card -->
+    <a href="{% url 'purchase_orders:po_list' %}" class="stat-card">
+        <div class="stat-card-header">
+            <div class="stat-icon icon-pos">📦</div>
+            <h3 class="stat-title">Pending Purchase Orders</h3>
+        </div>
+        <div class="stat-card-body">
+            <p class="stat-number">{{ pending_pos_count }}</p>
+        </div>
+        <div class="stat-card-footer">
+            View Purchase Orders &rarr;
         </div>
     </a>
 </div>

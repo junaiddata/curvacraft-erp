@@ -30,6 +30,7 @@ urlpatterns = [
     path('progress/', include('progress.urls', namespace='progress')),
     path('enquiries/', include('enquiries.urls', namespace='enquiries')),
     path('quotations/', include('quotations.urls', namespace='quotations')),
+    path('purchase-orders/', include('purchase_orders.urls', namespace='purchase_orders')),
     path('users/', include('users.urls', namespace='users')),
     path('invoices/', include('invoices.urls', namespace='invoices')),
     path('accounts/', include('accounts.urls', namespace='accounts')),

@@ -57,7 +57,8 @@ INSTALLED_APPS = [
     'core',
     'invoices',
     'accounts',
-    'reports'
+    'reports',
+    'purchase_orders'
 
 ]
 

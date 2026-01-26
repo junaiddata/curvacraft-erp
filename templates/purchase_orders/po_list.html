@@ -1,0 +1,54 @@
+<!-- templates/purchase_orders/po_list.html -->
+{% extends "base.html" %}
+{% load humanize %}
+{% block content %}
+<h1>Purchase Orders</h1>
+<div style="margin-bottom: 1rem;">
+    <a href="{% url 'purchase_orders:po_create' %}"><button>Create New Purchase Order</button></a>
+    <a href="{% url 'purchase_orders:contractor_list' %}"><button>Manage Contractors</button></a>
+</div>
+<hr>
+
+{% if purchase_orders %}
+    <table style="width:100%; border-collapse: collapse;">
+        <thead style="background-color: #f4f4f4;">
+            <tr>
+                <th style="padding: 10px; text-align: left;">PO Number</th>
+                <th style="padding: 10px; text-align: left;">Contractor</th>
+                <th style="padding: 10px; text-align: left;">Status</th>
+                <th style="padding: 10px; text-align: right;">Grand Total</th>
+                <th style="padding: 10px; text-align: left;">Date</th>
+                <th style="padding: 10px; text-align: left;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for po in purchase_orders %}
+                <tr style="border-bottom: 1px solid #dee2e6;">
+                    <td style="padding: 10px;"><strong>{{ po.po_number }}</strong></td>
+                    <td style="padding: 10px;">{{ po.contractor.name }}</td>
+                    <td style="padding: 10px;">
+                        <span style="padding: 4px 8px; border-radius: 4px; background-color: 
+                            {% if po.status == 'PENDING' %}#fff3cd
+                            {% elif po.status == 'SENT' %}#cfe2ff
+                            {% elif po.status == 'ACCEPTED' %}#d1e7dd
+                            {% elif po.status == 'REJECTED' %}#f8d7da
+                            {% else %}#e2e3e5
+                            {% endif %};">
+                            {{ po.get_status_display }}
+                        </span>
+                    </td>
+                    <td style="padding: 10px; text-align: right;">AED {{ po.grand_total|floatformat:2|intcomma }}</td>
+                    <td style="padding: 10px;">{{ po.created_at|date:"M d, Y" }}</td>
+                    <td style="padding: 10px;">
+                        <a href="{% url 'purchase_orders:po_detail' pk=po.pk %}"><button>View</button></a>
+                        <a href="{% url 'purchase_orders:po_edit' pk=po.pk %}"><button>Edit</button></a>
+                        <a href="{% url 'purchase_orders:po_pdf' pk=po.pk %}" target="_blank"><button>PDF</button></a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>No purchase orders found. <a href="{% url 'purchase_orders:po_create' %}">Create your first purchase order</a>.</p>
+{% endif %}
+{% endblock %}

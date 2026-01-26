@@ -760,6 +760,11 @@
                                 Quotations
                             </a>
                         </li>
+                        <li>
+                            <a href="{% url 'purchase_orders:po_list' %}" class="{% if 'purchase_orders' in request.resolver_match.namespace %}active{% endif %}">
+                                Purchase Orders
+                            </a>
+                        </li>
                                                 <li>
                             <a href="{% url 'enquiries:customer_list' %}" class="{% if 'customer' in request.resolver_match.url_name %}active{% endif %}">
                                 Customers

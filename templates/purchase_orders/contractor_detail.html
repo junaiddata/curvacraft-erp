@@ -1,0 +1,228 @@
+<!-- templates/purchase_orders/contractor_detail.html -->
+{% extends "base.html" %}
+{% load humanize %}
+{% block content %}
+<style>
+    .contractor-page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .contractor-page-header h1 {
+        margin: 0;
+        color: white;
+        font-size: 2rem;
+    }
+    .contractor-info-card {
+        background: white;
+        border: 2px solid #e0e7ff;
+        border-radius: 8px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 4px rgba(102, 126, 234, 0.1);
+    }
+    .contractor-info-card h3 {
+        color: #667eea;
+        margin-top: 0;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid #e0e7ff;
+    }
+    .info-row {
+        display: grid;
+        grid-template-columns: 150px 1fr;
+        gap: 1rem;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #f3f4f6;
+    }
+    .info-row:last-child {
+        border-bottom: none;
+    }
+    .info-label {
+        font-weight: 600;
+        color: #6b7280;
+        font-size: 0.9rem;
+    }
+    .info-value {
+        color: #1f2937;
+        font-size: 0.95rem;
+    }
+    .po-section {
+        background: white;
+        border: 2px solid #e0e7ff;
+        border-radius: 8px;
+        padding: 2rem;
+        box-shadow: 0 2px 4px rgba(102, 126, 234, 0.1);
+    }
+    .po-section h3 {
+        color: #667eea;
+        margin-top: 0;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid #e0e7ff;
+    }
+    .po-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .po-table thead {
+        background: #f3f4f6;
+    }
+    .po-table th {
+        padding: 0.75rem;
+        text-align: left;
+        color: #667eea;
+        font-weight: 600;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .po-table td {
+        padding: 1rem 0.75rem;
+        border-bottom: 1px solid #e0e7ff;
+    }
+    .po-table tbody tr:hover {
+        background: #f9fafb;
+    }
+    .back-link {
+        display: inline-block;
+        margin-bottom: 1rem;
+        color: #667eea;
+        text-decoration: none;
+        font-weight: 500;
+    }
+    .back-link:hover {
+        text-decoration: underline;
+    }
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+    }
+    .btn-primary {
+        background: #667eea;
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.875rem;
+        transition: background 0.2s;
+    }
+    .btn-primary:hover {
+        background: #5568d3;
+    }
+    .btn-danger {
+        background: #ef4444;
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.875rem;
+        transition: background 0.2s;
+    }
+    .btn-danger:hover {
+        background: #dc2626;
+    }
+</style>
+
+<a href="{% url 'purchase_orders:contractor_list' %}" class="back-link">&larr; Back to Contractors</a>
+
+<div class="contractor-page-header">
+    <h1>🏗️ {{ contractor.name }}</h1>
+    <p class="subtitle" style="margin-top: 0.5rem; opacity: 0.9;">Contractor Details & Purchase Orders</p>
+</div>
+
+<div style="display: flex; justify-content: flex-end; margin-bottom: 1rem;">
+    <div class="action-buttons">
+        <a href="{% url 'purchase_orders:contractor_edit' pk=contractor.pk %}">
+            <button class="btn-primary">✏️ Edit</button>
+        </a>
+        <a href="{% url 'purchase_orders:contractor_delete' pk=contractor.pk %}">
+            <button class="btn-danger">🗑️ Delete</button>
+        </a>
+    </div>
+</div>
+
+<div class="contractor-info-card">
+    <h3>📋 Contact Information</h3>
+    {% if contractor.contact_person %}
+        <div class="info-row">
+            <span class="info-label">Contact Person:</span>
+            <span class="info-value">{{ contractor.contact_person }}</span>
+        </div>
+    {% endif %}
+    {% if contractor.email %}
+        <div class="info-row">
+            <span class="info-label">Email:</span>
+            <span class="info-value">{{ contractor.email }}</span>
+        </div>
+    {% endif %}
+    {% if contractor.phone_number %}
+        <div class="info-row">
+            <span class="info-label">Phone:</span>
+            <span class="info-value">{{ contractor.phone_number }}</span>
+        </div>
+    {% endif %}
+    {% if contractor.address %}
+        <div class="info-row">
+            <span class="info-label">Address:</span>
+            <span class="info-value">{{ contractor.address|linebreaksbr }}</span>
+        </div>
+    {% endif %}
+    <div class="info-row">
+        <span class="info-label">Created:</span>
+        <span class="info-value">{{ contractor.created_at|date:"M d, Y" }}</span>
+    </div>
+</div>
+
+<div class="po-section">
+    <h3>📦 Purchase Orders</h3>
+    {% if purchase_orders %}
+        <table class="po-table">
+            <thead>
+                <tr>
+                    <th>PO Number</th>
+                    <th>Status</th>
+                    <th style="text-align: right;">Grand Total</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for po in purchase_orders %}
+                    <tr>
+                        <td><strong>{{ po.po_number }}</strong></td>
+                        <td>
+                            <span style="padding: 4px 8px; border-radius: 4px; background-color: 
+                                {% if po.status == 'PENDING' %}#fff3cd
+                                {% elif po.status == 'SENT' %}#cfe2ff
+                                {% elif po.status == 'ACCEPTED' %}#d1e7dd
+                                {% elif po.status == 'REJECTED' %}#f8d7da
+                                {% else %}#e2e3e5
+                                {% endif %};">
+                                {{ po.get_status_display }}
+                            </span>
+                        </td>
+                        <td style="text-align: right;">AED {{ po.grand_total|floatformat:2|intcomma }}</td>
+                        <td>{{ po.created_at|date:"M d, Y" }}</td>
+                        <td>
+                            <a href="{% url 'purchase_orders:po_detail' pk=po.pk %}">
+                                <button class="btn-primary" style="padding: 0.25rem 0.75rem; font-size: 0.8rem;">View</button>
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div style="text-align: center; padding: 2rem; color: #6b7280;">
+            <p style="margin: 0;">No purchase orders for this contractor yet.</p>
+            <a href="{% url 'purchase_orders:po_create' %}" style="color: #667eea; text-decoration: none; font-weight: 500;">Create a purchase order →</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

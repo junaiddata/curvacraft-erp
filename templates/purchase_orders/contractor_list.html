@@ -1,0 +1,170 @@
+<!-- templates/purchase_orders/contractor_list.html -->
+{% extends "base.html" %}
+{% block content %}
+<style>
+    .contractor-page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .contractor-page-header h1 {
+        margin: 0;
+        color: white;
+        font-size: 2rem;
+    }
+    .contractor-page-header .subtitle {
+        margin-top: 0.5rem;
+        opacity: 0.9;
+        font-size: 1rem;
+    }
+    .contractor-card {
+        background: white;
+        border: 2px solid #e0e7ff;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 4px rgba(102, 126, 234, 0.1);
+    }
+    .contractor-card:hover {
+        border-color: #667eea;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        transform: translateY(-2px);
+    }
+    .contractor-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #e0e7ff;
+    }
+    .contractor-name {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #667eea;
+        margin: 0;
+    }
+    .contractor-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+    .contractor-actions button {
+        background: #667eea;
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.875rem;
+        transition: background 0.2s;
+    }
+    .contractor-actions button:hover {
+        background: #5568d3;
+    }
+    .contractor-info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+    .contractor-info-item {
+        display: flex;
+        flex-direction: column;
+    }
+    .contractor-info-label {
+        font-size: 0.75rem;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.25rem;
+    }
+    .contractor-info-value {
+        font-size: 0.95rem;
+        color: #1f2937;
+        font-weight: 500;
+    }
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        background: #f9fafb;
+        border-radius: 8px;
+        border: 2px dashed #e0e7ff;
+    }
+    .empty-state-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+</style>
+
+<div class="contractor-page-header">
+    <h1>🏗️ Contractors</h1>
+    <p class="subtitle">Manage your contractor database and vendor information</p>
+</div>
+
+<div style="margin-bottom: 1.5rem;">
+    <a href="{% url 'purchase_orders:contractor_create' %}">
+        <button style="background: #667eea; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 6px; cursor: pointer; font-weight: 500; margin-right: 0.5rem;">
+            ➕ Add New Contractor
+        </button>
+    </a>
+    <a href="{% url 'purchase_orders:po_list' %}">
+        <button style="background: white; color: #667eea; border: 2px solid #667eea; padding: 0.75rem 1.5rem; border-radius: 6px; cursor: pointer; font-weight: 500;">
+            📋 Back to Purchase Orders
+        </button>
+    </a>
+</div>
+
+{% if contractors %}
+    <div>
+        {% for contractor in contractors %}
+            <div class="contractor-card">
+                <div class="contractor-card-header">
+                    <h2 class="contractor-name">{{ contractor.name }}</h2>
+                    <div class="contractor-actions">
+                        <a href="{% url 'purchase_orders:contractor_detail' pk=contractor.pk %}">
+                            <button>View</button>
+                        </a>
+                        <a href="{% url 'purchase_orders:contractor_edit' pk=contractor.pk %}">
+                            <button>Edit</button>
+                        </a>
+                    </div>
+                </div>
+                <div class="contractor-info-grid">
+                    {% if contractor.contact_person %}
+                        <div class="contractor-info-item">
+                            <span class="contractor-info-label">Contact Person</span>
+                            <span class="contractor-info-value">{{ contractor.contact_person }}</span>
+                        </div>
+                    {% endif %}
+                    {% if contractor.email %}
+                        <div class="contractor-info-item">
+                            <span class="contractor-info-label">Email</span>
+                            <span class="contractor-info-value">{{ contractor.email }}</span>
+                        </div>
+                    {% endif %}
+                    {% if contractor.phone_number %}
+                        <div class="contractor-info-item">
+                            <span class="contractor-info-label">Phone</span>
+                            <span class="contractor-info-value">{{ contractor.phone_number }}</span>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="empty-state">
+        <div class="empty-state-icon">🏗️</div>
+        <h3 style="color: #667eea; margin-bottom: 0.5rem;">No contractors yet</h3>
+        <p style="color: #6b7280; margin-bottom: 1.5rem;">Get started by adding your first contractor</p>
+        <a href="{% url 'purchase_orders:contractor_create' %}">
+            <button style="background: #667eea; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 6px; cursor: pointer; font-weight: 500;">
+                Add Your First Contractor
+            </button>
+        </a>
+    </div>
+{% endif %}
+{% endblock %}
