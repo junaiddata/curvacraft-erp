@@ -6,110 +6,376 @@
 {% block content %}
 
 <style>
-    /* These styles can be moved to base.html if you use them on more pages */
-    .table-container {
-        background-color: #ffffff;
-        border: 1px solid var(--border-color);
+    /* Page Header */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    
+    .page-header h1 {
+        margin: 0;
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--primary-dark);
+        letter-spacing: -0.5px;
+    }
+    
+    .header-actions {
+        display: flex;
+        gap: 0.75rem;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+    
+    /* Button Styles */
+    .btn-primary {
+        background: linear-gradient(135deg, var(--accent-primary), var(--primary-light));
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
         border-radius: 8px;
+        font-size: 0.925rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        box-shadow: var(--shadow-sm);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+        color: white;
+    }
+    
+    .btn-primary:active {
+        transform: translateY(0);
+    }
+    
+    .btn-icon {
+        font-size: 1.1rem;
+    }
+    
+    /* Table Container */
+    .table-container {
+        background-color: var(--bg-secondary);
+        border: 1px solid var(--border-light);
+        border-radius: 12px;
         padding: 0;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
         overflow-x: auto;
     }
+    
+    /* Table Styles */
     .data-table {
         width: 100%;
         border-collapse: collapse;
+        margin: 0;
     }
-    .data-table th, .data-table td {
-        padding: 1rem;
+    
+    .data-table thead {
+        background: linear-gradient(135deg, #f8f9fa 0%, #f1f3f5 100%);
+    }
+    
+    .data-table th {
+        padding: 1rem 1.25rem;
         text-align: left;
-        border-bottom: 1px solid var(--border-color);
+        font-weight: 600;
+        font-size: 0.875rem;
+        color: var(--text-primary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 2px solid var(--border-medium);
     }
-    .data-table thead th {
-        background-color: #f8f9fa;
-        font-weight: bold;
+    
+    .data-table td {
+        padding: 1.25rem 1.25rem;
+        text-align: left;
+        border-bottom: 1px solid var(--border-light);
+        color: var(--text-primary);
+        vertical-align: middle;
     }
+    
+    .data-table tbody tr {
+        transition: background-color 0.2s ease;
+    }
+    
+    .data-table tbody tr:hover {
+        background-color: var(--bg-hover);
+    }
+    
     .data-table tbody tr:last-child td {
         border-bottom: none;
     }
-    .data-table tbody tr:hover {
-        background-color: #f1f3f5;
-    }
+    
+    /* Status Badges */
     .status-badge {
-        padding: 0.25rem 0.6rem;
-        border-radius: 12px;
-        font-size: 0.8rem;
-        font-weight: bold;
+        padding: 0.4rem 0.85rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
         color: white;
         text-transform: uppercase;
-        
-        /* --- THIS IS THE FIX --- */
-        /* Prevents the text inside the badge from breaking into two lines */
-        white-space: nowrap; 
+        letter-spacing: 0.5px;
+        white-space: nowrap;
+        display: inline-block;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
-    .status-not_started { background-color: #6c757d; } /* Gray */
-    .status-in_progress { background-color: #007bff; } /* Blue */
-    .status-on_hold { background-color: #ffc107; color: #333; } /* Yellow */
-    .status-completed { background-color: #28a745; } /* Green */
-    .status-cancelled { background-color: #dc3545; } /* Red */
-
+    
+    .status-not_started { 
+        background: linear-gradient(135deg, #6c757d, #5a6268);
+    }
+    .status-in_progress { 
+        background: linear-gradient(135deg, #007bff, #0056b3);
+    }
+    .status-on_hold { 
+        background: linear-gradient(135deg, #ffc107, #e0a800);
+        color: #333;
+    }
+    .status-completed { 
+        background: linear-gradient(135deg, #28a745, #1e7e34);
+    }
+    .status-cancelled { 
+        background: linear-gradient(135deg, #dc3545, #c82333);
+    }
+    
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+    
+    .btn-action {
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+    
+    .btn-view {
+        background: linear-gradient(135deg, var(--info), #2196F3);
+        color: white;
+        box-shadow: 0 2px 4px rgba(66, 165, 245, 0.3);
+    }
+    
+    .btn-view:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(66, 165, 245, 0.4);
+        color: white;
+    }
+    
+    .btn-edit {
+        background: linear-gradient(135deg, var(--warning), #FF9800);
+        color: white;
+        box-shadow: 0 2px 4px rgba(255, 167, 38, 0.3);
+    }
+    
+    .btn-edit:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(255, 167, 38, 0.4);
+        color: white;
+    }
+    
+    .btn-delete {
+        background: linear-gradient(135deg, var(--error), #d32f2f);
+        color: white;
+        box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+    }
+    
+    .btn-delete:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(239, 68, 68, 0.4);
+        color: white;
+    }
+    
+    /* Customer and Location Styling */
+    .customer-name {
+        font-weight: 600;
+        color: var(--primary-dark);
+    }
+    
+    .location-text {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+    
+    /* SCO List */
+    .sco-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .sco-badge {
+        background: linear-gradient(135deg, var(--accent-light), var(--accent-secondary));
+        color: var(--primary-dark);
+        padding: 0.3rem 0.7rem;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        white-space: nowrap;
+    }
+    
+    .sco-empty {
+        color: var(--text-muted);
+        font-style: italic;
+        font-size: 0.85rem;
+    }
+    
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: var(--text-secondary);
+    }
+    
+    .empty-state-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.3;
+    }
+    
+    .empty-state h3 {
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+    }
+    
+    .empty-state p {
+        margin-bottom: 1.5rem;
+        color: var(--text-secondary);
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .header-actions {
+            width: 100%;
+        }
+        
+        .data-table {
+            font-size: 0.85rem;
+        }
+        
+        .data-table th,
+        .data-table td {
+            padding: 0.75rem;
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+            width: 100%;
+        }
+        
+        .btn-action {
+            width: 100%;
+            justify-content: center;
+        }
+    }
 </style>
 
-<div style="display: flex; justify-content: space-between; align-items: center;">
-    <h1>All Projects</h1>
-    <!-- ADD THIS BUTTON -->
-    <a href="{% url 'projects:project_create_direct' %}">
-        <button>+ Create Direct Project</button>
-    </a>
+<div class="page-header">
+    <h1>📋 All Projects</h1>
+    <div class="header-actions">
+        <a href="{% url 'projects:project_create_direct' %}" class="btn-primary">
+            <span class="btn-icon">➕</span>
+            <span>Create Direct Project</span>
+        </a>
+    </div>
 </div>
 
-<div class="table-container" style="margin-top: 2rem;">
-    <table class="data-table">
-        <thead>
-            <tr>
-                <th>Project Title</th>
-                <th>Customer</th>
-                <th>Location</th>
-                <th>Assigned SCOs</th>
-                <th>Status</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for project in projects %}
+<div class="table-container">
+    {% if projects %}
+        <table class="data-table">
+            <thead>
                 <tr>
-                    <td>{{ project.title }}</td>
-                    <td>{{ project.customer }}</td>
-                    <td>{{ project.location }}</td>
-                    <td>
-                        {% for sco in project.assigned_scos.all %}
-                            {{ sco.username }}{% if not forloop.last %}, {% endif %}
-                        {% empty %}
-                            <span style="color: #888;">Not Assigned</span>
-                        {% endfor %}
-                    </td>
-                    <td>
-                        <span class="status-badge status-{{ project.status|lower }}">{{ project.get_status_display }}</span>
-                    </td>
-                    <td>
-                        <a href="{% url 'projects:project_detail' pk=project.pk %}">
-                            <button type="button">View Details</button>
-                        </a>
-     
-                       <a href="{% url 'projects:project_delete' pk=project.pk %}">
-                    <button type="button" class="btn-small" style="background: var(--error);">Delete</button>
-                </a>
-
-                    </td>
+                    <th>Project Title</th>
+                    <th>Customer</th>
+                    <th>Location</th>
+                    <th>Assigned SCOs</th>
+                    <th>Status</th>
+                    <th>Actions</th>
                 </tr>
-            {% empty %}
-                <tr>
-                    <td colspan="6" style="text-align: center; padding: 2rem;">
-                        No projects have been created yet.
-                    </td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                {% for project in projects %}
+                    <tr>
+                        <td>
+                            <strong style="color: var(--primary-dark); font-size: 1rem;">{{ project.title }}</strong>
+                        </td>
+                        <td>
+                            <span class="customer-name">{{ project.customer }}</span>
+                        </td>
+                        <td>
+                            <span class="location-text">{{ project.location }}</span>
+                        </td>
+                        <td>
+                            {% if project.assigned_scos.all %}
+                                <div class="sco-list">
+                                    {% for sco in project.assigned_scos.all %}
+                                        <span class="sco-badge">{{ sco.username }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <span class="sco-empty">Not Assigned</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="status-badge status-{{ project.status|lower }}">
+                                {{ project.get_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="{% url 'projects:project_detail' pk=project.pk %}" class="btn-action btn-view">
+                                    <span>👁️</span>
+                                    <span>View</span>
+                                </a>
+                                <a href="{% url 'projects:project_edit' pk=project.pk %}" class="btn-action btn-edit">
+                                    <span>✏️</span>
+                                    <span>Edit</span>
+                                </a>
+                                <a href="{% url 'projects:project_delete' pk=project.pk %}" class="btn-action btn-delete">
+                                    <span>🗑️</span>
+                                    <span>Delete</span>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">📁</div>
+            <h3>No Projects Yet</h3>
+            <p>Get started by creating your first project</p>
+            <a href="{% url 'projects:project_create_direct' %}" class="btn-primary">
+                <span class="btn-icon">➕</span>
+                <span>Create Your First Project</span>
+            </a>
+        </div>
+    {% endif %}
 </div>
 
 {% endblock %}
