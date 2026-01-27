@@ -101,7 +101,7 @@
 
 <div class="contractor-page-header">
     <h1>🏗️ Contractors</h1>
-    <p class="subtitle">Manage your contractor database and vendor information</p>
+    <p class="subtitle">Manage your Vendors database and vendor information</p>
 </div>
 
 <div style="margin-bottom: 1.5rem;">
@@ -158,11 +158,11 @@
 {% else %}
     <div class="empty-state">
         <div class="empty-state-icon">🏗️</div>
-        <h3 style="color: #667eea; margin-bottom: 0.5rem;">No contractors yet</h3>
-        <p style="color: #6b7280; margin-bottom: 1.5rem;">Get started by adding your first contractor</p>
+        <h3 style="color: #667eea; margin-bottom: 0.5rem;">No Suppliers / Vendors yet</h3>
+        <p style="color: #6b7280; margin-bottom: 1.5rem;">Get started by adding your first supplier / vendor</p>
         <a href="{% url 'purchase_orders:contractor_create' %}">
             <button style="background: #667eea; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 6px; cursor: pointer; font-weight: 500;">
-                Add Your First Contractor
+                Add Your First Supplier / Vendor
             </button>
         </a>
     </div>

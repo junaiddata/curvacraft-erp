@@ -129,11 +129,11 @@
     }
 </style>
 
-<a href="{% url 'purchase_orders:contractor_list' %}" class="back-link">&larr; Back to Contractors</a>
+<a href="{% url 'purchase_orders:contractor_list' %}" class="back-link">&larr; Back to Vendor/Suppliers </a>
 
 <div class="contractor-page-header">
     <h1>🏗️ {{ contractor.name }}</h1>
-    <p class="subtitle" style="margin-top: 0.5rem; opacity: 0.9;">Contractor Details & Purchase Orders</p>
+    <p class="subtitle" style="margin-top: 0.5rem; opacity: 0.9;">Vendor/Supplier Details & Purchase Orders</p>
 </div>
 
 <div style="display: flex; justify-content: flex-end; margin-bottom: 1rem;">
@@ -220,7 +220,7 @@
         </table>
     {% else %}
         <div style="text-align: center; padding: 2rem; color: #6b7280;">
-            <p style="margin: 0;">No purchase orders for this contractor yet.</p>
+            <p style="margin: 0;">No purchase orders for this Supplier / Vendor yet.</p>
             <a href="{% url 'purchase_orders:po_create' %}" style="color: #667eea; text-decoration: none; font-weight: 500;">Create a purchase order →</a>
         </div>
     {% endif %}

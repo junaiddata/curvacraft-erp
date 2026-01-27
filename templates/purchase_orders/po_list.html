@@ -5,7 +5,7 @@
 <h1>Purchase Orders</h1>
 <div style="margin-bottom: 1rem;">
     <a href="{% url 'purchase_orders:po_create' %}"><button>Create New Purchase Order</button></a>
-    <a href="{% url 'purchase_orders:contractor_list' %}"><button>Manage Contractors</button></a>
+    <a href="{% url 'purchase_orders:contractor_list' %}"><button>Manage Vendors</button></a>
 </div>
 <hr>
 
@@ -14,7 +14,7 @@
         <thead style="background-color: #f4f4f4;">
             <tr>
                 <th style="padding: 10px; text-align: left;">PO Number</th>
-                <th style="padding: 10px; text-align: left;">Contractor</th>
+                <th style="padding: 10px; text-align: left;">Vendor</th>
                 <th style="padding: 10px; text-align: left;">Status</th>
                 <th style="padding: 10px; text-align: right;">Grand Total</th>
                 <th style="padding: 10px; text-align: left;">Date</th>

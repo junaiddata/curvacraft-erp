@@ -567,7 +567,7 @@ def po_pdf_view(request, pk):
     
     # 2. CONTRACTOR AND COMPANY INFORMATION - COMPACT
     contractor_info = f"""
-        <font color='#{accent_color.hexval()[2:]}' size='8'><b>CONTRACTOR DETAILS</b></font><br/>
+        <font color='#{accent_color.hexval()[2:]}' size='8'><b>GENERAL DETAILS</b></font><br/>
         <font size='8'><b>{po.contractor.name}</b></font><br/>
         """
     
