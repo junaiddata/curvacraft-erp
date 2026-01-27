@@ -248,7 +248,7 @@ class NumberedCanvas(canvas.Canvas):
         
         # Company details - left side
         self.drawString(0.75*inch, 0.85*inch, "CURVACRAFT DESIGN & BUILD STUDIO")
-        self.drawString(0.75*inch, 0.65*inch, "info@curvacraft.com | www.curvacraft.com")
+        self.drawString(0.75*inch, 0.65*inch, "reachout@curvacraft.com | www.curvacraft.com")
         self.drawString(0.75*inch, 0.45*inch, "Dubai, United Arab Emirates")
         
         self.restoreState()
@@ -481,7 +481,7 @@ def quotation_pdf_view(request, pk):
         <font color='#{accent_color.hexval()[2:]}' size='11'><b>FROM</b></font><br/>
         <font size='10'><b>CURVACRAFT DESIGN & BUILD STUDIO</b></font><br/>
         Studio Management Division<br/>
-        info@curvacraft.com<br/>
+        reachout@curvacraft.com<br/>
         www.curvacraft.com
     """
     
@@ -688,7 +688,7 @@ def quotation_pdf_view(request, pk):
     <font color='#{accent_color.hexval()[2:]}' size='12'><b>Thank you for your business!</b></font><br/>
     <font color='#{secondary_color.hexval()[2:]}' size='9'>
     We look forward to working with you on this project.<br/>
-    For any queries, please contact us at info@curvacraft.com
+    For any queries, please contact us at reachout@curvacraft.com
     </font>
     </para>
     """

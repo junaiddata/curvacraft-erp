@@ -348,7 +348,7 @@ class NumberedCanvas(canvas.Canvas):
         
         # Company details - left side - COMPACT
         self.drawString(0.5*inch, 0.5*inch, "CURVACRAFT DESIGN & BUILD STUDIO")
-        self.drawString(0.5*inch, 0.35*inch, "info@curvacraft.com | www.curvacraft.com")
+        self.drawString(0.5*inch, 0.35*inch, "reachout@curvacraft.com | www.curvacraft.com")
         self.drawString(0.5*inch, 0.2*inch, "Dubai, United Arab Emirates")
         
         self.restoreState()
@@ -584,7 +584,7 @@ def po_pdf_view(request, pk):
         <font color='#{accent_color.hexval()[2:]}' size='8'><b>FROM</b></font><br/>
         <font size='8'><b>CURVACRAFT DESIGN & BUILD STUDIO</b></font><br/>
         Studio Management Division<br/>
-        info@curvacraft.com<br/>
+        reachout@curvacraft.com<br/>
         www.curvacraft.com
     """
     
@@ -805,7 +805,7 @@ def po_pdf_view(request, pk):
     <font color='#{accent_color.hexval()[2:]}' size='9'><b>Thank you for your service!</b></font><br/>
     <font color='#{secondary_color.hexval()[2:]}' size='7'>
     We look forward to working with you on this order.<br/>
-    For any queries, please contact us at info@curvacraft.com
+    For any queries, please contact us at reachout@curvacraft.com
     </font>
     </para>
     """
