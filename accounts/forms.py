@@ -40,10 +40,13 @@ class PaymentForm(forms.ModelForm):
 
     def __init__(self, *args, max_amount=None, **kwargs):
         super().__init__(*args, **kwargs)
-        self.max_amount = max_amount
+        # Round to 2 decimals for comparison - allows 10.12 when amount_due is 10.115
+        self.max_amount_rounded = (
+            Decimal(str(round(float(max_amount), 2))) if max_amount is not None else None
+        )
         if max_amount is not None:
-            self.fields['amount'].widget.attrs['max'] = str(float(max_amount))
-            self.fields['amount'].help_text = f'Amount due: AED {max_amount:,.2f} (max 2 decimal places).'
+            self.fields['amount'].widget.attrs['max'] = str(float(self.max_amount_rounded))
+            self.fields['amount'].help_text = f'Amount due: AED {self.max_amount_rounded:,.2f} (max 2 decimal places).'
 
     def clean_amount(self):
         amount = self.cleaned_data.get('amount')
@@ -51,9 +54,9 @@ class PaymentForm(forms.ModelForm):
             return amount
         if amount <= 0:
             raise ValidationError('Payment amount must be greater than zero.')
-        if self.max_amount is not None and amount > self.max_amount:
+        if self.max_amount_rounded is not None and amount > self.max_amount_rounded:
             raise ValidationError(
-                f'Payment amount cannot exceed AED {self.max_amount:,.2f} (amount due).'
+                f'Payment amount cannot exceed AED {self.max_amount_rounded:,.2f} (amount due).'
             )
         # Enforce 2 decimal places
         return Decimal(str(round(float(amount), 2)))

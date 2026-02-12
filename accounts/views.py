@@ -61,19 +61,20 @@ def accounts_dashboard(request):
 def add_payment(request, invoice_pk):
     invoice = get_object_or_404(Invoice, pk=invoice_pk)
 
-    # Pre-fill the form with the remaining amount due (proper 2 decimal format)
+    # Round to 2 decimals - e.g. 10.115 becomes 10.12 for display and validation
     amount_due = invoice.amount_due
-    initial_data = {'amount': round(float(amount_due), 2)}
+    amount_due_rounded = round(float(amount_due), 2)
+    initial_data = {'amount': amount_due_rounded}
 
     if request.method == 'POST':
-        form = PaymentForm(request.POST, max_amount=amount_due)
+        form = PaymentForm(request.POST, max_amount=amount_due_rounded)
         if form.is_valid():
             payment = form.save(commit=False)
             payment.invoice = invoice
 
-            # Prevent over-payment
-            if payment.amount > invoice.amount_due:
-                messages.error(request, f"Payment amount cannot be greater than the amount due ({invoice.amount_due:,.2f}).")
+            # Prevent over-payment (amount_due_rounded allows 10.12 when due is 10.115)
+            if float(payment.amount) > amount_due_rounded:
+                messages.error(request, f"Payment amount cannot be greater than the amount due (AED {amount_due_rounded:,.2f}).")
             else:
                 payment.save()
                 messages.success(request, f"Payment of {payment.amount:,.2f} recorded successfully for invoice {invoice.invoice_number}.")
@@ -86,12 +87,12 @@ def add_payment(request, invoice_pk):
 
                 return redirect('invoices:invoice_detail', pk=invoice.pk)
     else:
-        form = PaymentForm(initial=initial_data, max_amount=amount_due)
+        form = PaymentForm(initial=initial_data, max_amount=amount_due_rounded)
 
     context = {
         'form': form,
         'invoice': invoice,
-        'amount_due': amount_due,
+        'amount_due': amount_due_rounded,
     }
     return render(request, 'accounts/payment_form.html', context)
 
