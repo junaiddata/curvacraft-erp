@@ -61,35 +61,37 @@ def accounts_dashboard(request):
 def add_payment(request, invoice_pk):
     invoice = get_object_or_404(Invoice, pk=invoice_pk)
 
-    # Pre-fill the form with the remaining amount due
-    initial_data = {'amount': invoice.amount_due}
+    # Pre-fill the form with the remaining amount due (proper 2 decimal format)
+    amount_due = invoice.amount_due
+    initial_data = {'amount': round(float(amount_due), 2)}
 
     if request.method == 'POST':
-        form = PaymentForm(request.POST)
+        form = PaymentForm(request.POST, max_amount=amount_due)
         if form.is_valid():
             payment = form.save(commit=False)
             payment.invoice = invoice
-            
+
             # Prevent over-payment
             if payment.amount > invoice.amount_due:
                 messages.error(request, f"Payment amount cannot be greater than the amount due ({invoice.amount_due:,.2f}).")
             else:
                 payment.save()
                 messages.success(request, f"Payment of {payment.amount:,.2f} recorded successfully for invoice {invoice.invoice_number}.")
-                
-                # Optional: Automatically update invoice status if fully paid
+
+                # Automatically update invoice status if fully paid
                 if invoice.amount_due <= 0:
                     invoice.status = 'PAID'
                     invoice.save()
                     messages.info(request, f"Invoice {invoice.invoice_number} is now fully paid.")
-                    
+
                 return redirect('invoices:invoice_detail', pk=invoice.pk)
     else:
-        form = PaymentForm(initial=initial_data)
+        form = PaymentForm(initial=initial_data, max_amount=amount_due)
 
     context = {
         'form': form,
-        'invoice': invoice
+        'invoice': invoice,
+        'amount_due': amount_due,
     }
     return render(request, 'accounts/payment_form.html', context)
 

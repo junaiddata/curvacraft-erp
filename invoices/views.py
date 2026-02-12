@@ -82,7 +82,7 @@ def invoice_detail(request, pk):
     """Displays a complete overview of a single invoice and handles status updates."""
     invoice = get_object_or_404(Invoice, pk=pk)
     
-    # --- ADD THIS FORM HANDLING LOGIC ---
+    # --- FORM HANDLING LOGIC ---
     if request.method == 'POST':
         # This POST is only for the status update
         status_form = InvoiceStatusForm(request.POST, instance=invoice)
@@ -91,6 +91,15 @@ def invoice_detail(request, pk):
             if invoice.status == 'VOID':
                 messages.error(request, "A voided invoice cannot be changed.")
             else:
+                new_status = status_form.cleaned_data['status']
+                # If marking as Paid, require payment to be recorded first
+                if new_status == 'PAID' and invoice.amount_due > 0:
+                    messages.warning(
+                        request,
+                        "Please record the payment first before marking the invoice as Paid. "
+                        "Amount due: AED {:.2f}".format(invoice.amount_due)
+                    )
+                    return redirect('accounts:add_payment', invoice_pk=invoice.pk)
                 status_form.save()
                 messages.success(request, 'Invoice status has been updated.')
             return redirect('invoices:invoice_detail', pk=invoice.pk)
