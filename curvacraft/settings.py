@@ -64,6 +64,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -140,14 +141,16 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-# --- ADD THIS LINE ---
-# The absolute path to the directory where collectstatic will gather static files.
+# Directory where collectstatic gathers all static files (serve this in production).
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# (It's also good practice to have STATICFILES_DIRS)
+# Extra directories to search for static files (in addition to app static/ folders).
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
+
+# Serve static files in production via WhiteNoise (optional: use CompressedManifestStaticFilesStorage for hashed URLs).
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'users.User'
