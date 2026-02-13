@@ -3,6 +3,7 @@ from django.shortcuts import render
 from projects.models import Project # To get global stats
 from invoices.models import Invoice
 from .forms import PaymentForm, CreditNoteForm
+from .models import Payment
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -95,6 +96,33 @@ def add_payment(request, invoice_pk):
         'amount_due': amount_due_rounded,
     }
     return render(request, 'accounts/payment_form.html', context)
+
+
+@login_required
+@role_required('admin')
+def delete_payment(request, pk):
+    """Delete a payment. Redirects back to the invoice."""
+    payment = get_object_or_404(Payment, pk=pk)
+    invoice = payment.invoice
+
+    if request.method == 'POST':
+        amount = payment.amount
+        invoice_pk = invoice.pk
+        payment.delete()
+        messages.success(request, f'Payment of AED {amount:,.2f} has been deleted.')
+
+        # If invoice was Paid, set back to Sent when there is still amount due
+        invoice.refresh_from_db()
+        if invoice.status == 'PAID' and invoice.amount_due > 0:
+            invoice.status = 'SENT'
+            invoice.save(update_fields=['status'])
+            messages.info(request, 'Invoice status has been set to Sent (no longer fully paid).')
+
+        return redirect('invoices:invoice_detail', pk=invoice_pk)
+
+    context = {'payment': payment, 'invoice': invoice}
+    return render(request, 'accounts/payment_confirm_delete.html', context)
+
 
 @login_required
 @role_required('admin')
