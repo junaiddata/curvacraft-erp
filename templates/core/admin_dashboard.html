@@ -6,169 +6,474 @@
 {% block content %}
 
 <style>
-    .dashboard-header {
+    /* ─────────────────────────────────────────────────────────────
+       DESIGN TOKENS — single source of truth
+    ────────────────────────────────────────────────────────────── */
+    :root {
+        --dash-primary: #1B2A4A;
+        --dash-primary-light: #2C4A7C;
+        --dash-accent: #D4912A;
+        --dash-accent-light: #F5E6CC;
+        --dash-text: #1F2937;
+        --dash-text-secondary: #6B7280;
+        --dash-text-muted: #9CA3AF;
+        --dash-bg: #F9FAFB;
+        --dash-card-bg: #FFFFFF;
+        --dash-border: #E5E7EB;
+        --dash-border-hover: #D1D5DB;
+        --dash-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+        --dash-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+        --dash-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.10);
+        --dash-radius: 12px;
+        --dash-radius-sm: 8px;
+        --dash-transition: all 0.2s ease;
+    }
+
+
+    /* ─────────────────────────────────────────────────────────────
+       PAGE HEADER
+    ────────────────────────────────────────────────────────────── */
+    .dash-header {
         margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid var(--dash-border);
     }
 
-    .dashboard-header h1 {
-        font-size: 2.25rem; /* Larger title */
+    .dash-header-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .dash-header h1 {
+        font-size: 1.75rem;
         font-weight: 700;
-        color: var(--primary-dark);
+        color: var(--dash-primary);
+        margin: 0;
+        letter-spacing: -0.02em;
     }
 
-    .dashboard-header .welcome-text {
-        font-size: 1.1rem;
-        color: var(--text-secondary);
+    .dash-header .dash-subtitle {
+        font-size: 0.95rem;
+        color: var(--dash-text-secondary);
+        margin-top: 0.35rem;
+        line-height: 1.5;
     }
 
+    .dash-header .dash-subtitle strong {
+        color: var(--dash-text);
+        font-weight: 600;
+    }
+
+    .dash-date-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.4rem 0.85rem;
+        background: var(--dash-bg);
+        border: 1px solid var(--dash-border);
+        border-radius: 20px;
+        font-size: 0.8rem;
+        color: var(--dash-text-secondary);
+        font-weight: 500;
+        white-space: nowrap;
+    }
+
+    .dash-date-badge svg {
+        width: 14px;
+        height: 14px;
+        opacity: 0.6;
+    }
+
+
+    /* ─────────────────────────────────────────────────────────────
+       STATS GRID
+    ────────────────────────────────────────────────────────────── */
     .stats-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* Responsive columns */
-        gap: 1.5rem;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 1.25rem;
     }
 
+    @media (min-width: 1200px) {
+        .stats-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    @media (min-width: 1600px) {
+        .stats-grid {
+            grid-template-columns: repeat(5, 1fr);
+        }
+    }
+
+
+    /* ─────────────────────────────────────────────────────────────
+       STAT CARD
+    ────────────────────────────────────────────────────────────── */
     .stat-card {
-        background-color: var(--bg-secondary);
-        border: 1px solid var(--border-light);
-        border-radius: 12px;
-        padding: 1.5rem;
+        position: relative;
+        background: var(--dash-card-bg);
+        border: 1px solid var(--dash-border);
+        border-radius: var(--dash-radius);
+        padding: 1.35rem 1.5rem 1.25rem;
         display: flex;
         flex-direction: column;
         text-decoration: none;
-        box-shadow: var(--shadow-sm);
-        transition: var(--transition);
-        position: relative;
+        color: inherit;
+        box-shadow: var(--dash-shadow-sm);
+        transition: var(--dash-transition);
+        overflow: hidden;
+    }
+
+    /* Accent top-border — colored per card */
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        border-radius: var(--dash-radius) var(--dash-radius) 0 0;
+        transition: height 0.2s ease;
     }
 
     .stat-card:hover {
-        box-shadow: var(--shadow-md);
-        border-color: var(--border-medium);
+        box-shadow: var(--dash-shadow-md);
+        border-color: var(--dash-border-hover);
+        transform: translateY(-2px);
     }
 
+    .stat-card:hover::before {
+        height: 4px;
+    }
+
+    /* Per-card accent colors */
+    .stat-card.card-projects::before   { background: #3B82F6; }
+    .stat-card.card-enquiries::before  { background: #F59E0B; }
+    .stat-card.card-quotes::before     { background: #10B981; }
+    .stat-card.card-reports::before    { background: #8B5CF6; }
+    .stat-card.card-pos::before        { background: #EC4899; }
+
+
+    /* ── Card Header ── */
     .stat-card-header {
         display: flex;
         align-items: center;
-        gap: 1rem;
-        margin-bottom: 1rem;
+        gap: 0.85rem;
+        margin-bottom: 1.15rem;
     }
 
     .stat-icon {
-        width: 48px;
-        height: 48px;
-        border-radius: 10px;
+        width: 44px;
+        height: 44px;
+        border-radius: var(--dash-radius-sm);
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.5rem;
-        flex-shrink: 0; /* Prevent icon from shrinking */
+        flex-shrink: 0;
     }
 
-    /* Icon specific colors */
-    .icon-projects { background-color: rgba(66, 165, 245, 0.1); color: var(--info); }
-    .icon-enquiries { background-color: rgba(255, 167, 38, 0.1); color: var(--warning); }
-    .icon-quotes { background-color: rgba(102, 187, 106, 0.1); color: var(--success); }
-    .icon-reports { background-color: rgba(93, 64, 55, 0.1); color: var(--primary-medium); }
-    .icon-pos { background-color: rgba(156, 39, 176, 0.1); color: #9c27b0; }
-    
+    .stat-icon svg {
+        width: 22px;
+        height: 22px;
+    }
+
+    /* Icon theme colors */
+    .icon-projects  { background: #EFF6FF; color: #3B82F6; }
+    .icon-enquiries { background: #FFFBEB; color: #F59E0B; }
+    .icon-quotes    { background: #ECFDF5; color: #10B981; }
+    .icon-reports   { background: #F5F3FF; color: #8B5CF6; }
+    .icon-pos       { background: #FDF2F8; color: #EC4899; }
+
     .stat-title {
-        font-size: 1rem;
-        font-weight: 500;
-        color: var(--text-secondary);
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--dash-text-secondary);
+        margin: 0;
+        line-height: 1.3;
+        letter-spacing: 0.01em;
+        text-transform: uppercase;
     }
 
+
+    /* ── Card Body ── */
     .stat-card-body {
-        flex-grow: 1; /* Pushes footer to the bottom */
+        flex-grow: 1;
     }
 
     .stat-number {
-        font-size: 3rem;
+        font-size: 2.5rem;
         font-weight: 700;
-        color: var(--primary-dark);
+        color: var(--dash-primary);
         line-height: 1;
+        margin: 0;
+        letter-spacing: -0.03em;
+        font-variant-numeric: tabular-nums;
     }
 
+    .stat-description {
+        font-size: 0.8rem;
+        color: var(--dash-text-muted);
+        margin-top: 0.35rem;
+    }
+
+
+    /* ── Card Footer ── */
     .stat-card-footer {
-        margin-top: 1rem;
-        font-size: 0.875rem;
-        color: var(--accent-primary);
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        margin-top: 1.15rem;
+        padding-top: 0.85rem;
+        border-top: 1px solid var(--dash-border);
+        font-size: 0.8rem;
+        color: var(--dash-text-secondary);
         font-weight: 500;
+        transition: var(--dash-transition);
+    }
+
+    .stat-card-footer svg {
+        width: 14px;
+        height: 14px;
+        transition: transform 0.2s ease;
+    }
+
+    .stat-card:hover .stat-card-footer {
+        color: var(--dash-primary);
+    }
+
+    .stat-card:hover .stat-card-footer svg {
+        transform: translateX(3px);
+    }
+
+
+    /* ─────────────────────────────────────────────────────────────
+       QUICK ACTIONS BAR (optional bottom section)
+    ────────────────────────────────────────────────────────────── */
+    .quick-actions {
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--dash-border);
+    }
+
+    .quick-actions-title {
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--dash-text-muted);
+        margin-bottom: 0.75rem;
+    }
+
+    .quick-actions-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.6rem;
+    }
+
+    .quick-action-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.5rem 1rem;
+        background: var(--dash-card-bg);
+        border: 1px solid var(--dash-border);
+        border-radius: 8px;
+        font-size: 0.82rem;
+        font-weight: 500;
+        color: var(--dash-text-secondary);
+        text-decoration: none;
+        transition: var(--dash-transition);
+    }
+
+    .quick-action-btn:hover {
+        border-color: var(--dash-primary);
+        color: var(--dash-primary);
+        box-shadow: var(--dash-shadow-sm);
+    }
+
+    .quick-action-btn svg {
+        width: 15px;
+        height: 15px;
+        opacity: 0.7;
     }
 </style>
 
-<div class="dashboard-header">
-    <h1>Dashboard</h1>
-    <p class="welcome-text">Welcome back, {{ user.username }}. Here's a summary of your studio's activity.</p>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     HEADER
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="dash-header">
+    <div class="dash-header-top">
+        <div>
+            <h1>Dashboard</h1>
+            <p class="dash-subtitle">
+                Welcome back, <strong>{{ user.username }}</strong>. Here's your studio at a glance.
+            </p>
+        </div>
+        <div class="dash-date-badge">
+            <!-- Calendar icon -->
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/>
+            </svg>
+            {% now "l, d M Y" %}
+        </div>
+    </div>
 </div>
 
+
+<!-- ═══════════════════════════════════════════════════════════════
+     STAT CARDS
+     ═══════════════════════════════════════════════════════════════ -->
 <div class="stats-grid">
-    <!-- Active Projects Card -->
-    <a href="{% url 'projects:dashboard' %}" class="stat-card">
+
+    <!-- Active Projects -->
+    <a href="{% url 'projects:dashboard' %}" class="stat-card card-projects">
         <div class="stat-card-header">
-            <div class="stat-icon icon-projects"></div>
+            <div class="stat-icon icon-projects">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z"/>
+                </svg>
+            </div>
             <h3 class="stat-title">Active Projects</h3>
         </div>
         <div class="stat-card-body">
             <p class="stat-number">{{ active_projects_count }}</p>
+            <p class="stat-description">Currently in progress</p>
         </div>
         <div class="stat-card-footer">
-            View All Projects &rarr;
+            View All Projects
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+            </svg>
         </div>
     </a>
 
-    <!-- New Enquiries Card -->
-    <a href="{% url 'enquiries:enquiry_list' %}" class="stat-card">
+    <!-- New Enquiries -->
+    <a href="{% url 'enquiries:enquiry_list' %}" class="stat-card card-enquiries">
         <div class="stat-card-header">
-            <div class="stat-icon icon-enquiries"></div>
-            <h3 class="stat-title">New Enquiries to Review</h3>
+            <div class="stat-icon icon-enquiries">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/>
+                </svg>
+            </div>
+            <h3 class="stat-title">New Enquiries</h3>
         </div>
         <div class="stat-card-body">
             <p class="stat-number">{{ pending_enquiries_count }}</p>
+            <p class="stat-description">Awaiting your review</p>
         </div>
         <div class="stat-card-footer">
-            Manage Enquiries &rarr;
+            Manage Enquiries
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+            </svg>
         </div>
     </a>
 
-    <!-- Quotes Awaiting Acceptance Card -->
-    <a href="{% url 'quotations:quotation_list' %}" class="stat-card">
+    <!-- Quotes Awaiting Acceptance -->
+    <a href="{% url 'quotations:quotation_list' %}" class="stat-card card-quotes">
         <div class="stat-card-header">
-            <div class="stat-icon icon-quotes"></div>
-            <h3 class="stat-title">Quotes Awaiting Acceptance</h3>
+            <div class="stat-icon icon-quotes">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15a2.25 2.25 0 012.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25z"/>
+                </svg>
+            </div>
+            <h3 class="stat-title">Quotes Pending</h3>
         </div>
         <div class="stat-card-body">
             <p class="stat-number">{{ quotes_awaiting_acceptance }}</p>
+            <p class="stat-description">Awaiting client acceptance</p>
         </div>
         <div class="stat-card-footer">
-            View Quotations &rarr;
+            View Quotations
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+            </svg>
         </div>
     </a>
 
-    <!-- Daily Reports to Review Card -->
-    <a href="{% url 'progress:daily_progress_review_list' %}" class="stat-card">
+    <!-- Daily Reports to Review -->
+    <a href="{% url 'progress:daily_progress_review_list' %}" class="stat-card card-reports">
         <div class="stat-card-header">
-            <div class="stat-icon icon-reports"></div>
-            <h3 class="stat-title">Daily Reports to Review</h3>
+            <div class="stat-icon icon-reports">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/>
+                </svg>
+            </div>
+            <h3 class="stat-title">Daily Reports</h3>
         </div>
         <div class="stat-card-body">
             <p class="stat-number">{{ reports_to_review_count }}</p>
+            <p class="stat-description">Pending your review</p>
         </div>
         <div class="stat-card-footer">
-            Go to Review &rarr;
+            Go to Review
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+            </svg>
         </div>
     </a>
 
-    <!-- Pending Purchase Orders Card -->
-    <a href="{% url 'purchase_orders:po_list' %}" class="stat-card">
+    <!-- Pending Purchase Orders -->
+    <a href="{% url 'purchase_orders:po_list' %}" class="stat-card card-pos">
         <div class="stat-card-header">
-            <div class="stat-icon icon-pos"></div>
-            <h3 class="stat-title">Pending Purchase Orders</h3>
+            <div class="stat-icon icon-pos">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"/>
+                </svg>
+            </div>
+            <h3 class="stat-title">Purchase Orders</h3>
         </div>
         <div class="stat-card-body">
             <p class="stat-number">{{ pending_pos_count }}</p>
+            <p class="stat-description">Awaiting approval</p>
         </div>
         <div class="stat-card-footer">
-            View Purchase Orders &rarr;
+            View Orders
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+            </svg>
         </div>
     </a>
+
 </div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     QUICK ACTIONS
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="quick-actions">
+    <p class="quick-actions-title">Quick Actions</p>
+    <div class="quick-actions-grid">
+        <a href="{% url 'enquiries:enquiry_list' %}" class="quick-action-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+            </svg>
+            New Enquiry
+        </a>
+        <a href="{% url 'quotations:quotation_list' %}" class="quick-action-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+            </svg>
+            Create Quote
+        </a>
+        <a href="{% url 'projects:dashboard' %}" class="quick-action-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+            </svg>
+            New Project
+        </a>
+        <a href="{% url 'purchase_orders:po_list' %}" class="quick-action-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+            </svg>
+            New Purchase Order
+        </a>
+    </div>
+</div>
+
 {% endblock %}
