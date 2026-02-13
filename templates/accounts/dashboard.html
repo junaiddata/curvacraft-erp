@@ -1,205 +1,122 @@
-<!-- templates/accounts/dashboard.html -->
 {% extends "base.html" %}
 {% load humanize %}
-
-{% block title %}Accounts Dashboard{% endblock %}
-
+{% block title %}Accounts{% endblock %}
 {% block content %}
-
 <style>
-    /* These styles are adapted from your main admin dashboard for consistency */
-    .stats-grid {
+    .accounts-page { font-size: 0.8125rem; }
+    .accounts-page .page-header { margin-bottom: 0.75rem; }
+    .accounts-page .page-title { font-size: 1.125rem; margin: 0; }
+    .accounts-page .summary-row {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 1.5rem;
-    }
-    .stat-card {
-        background-color: var(--bg-secondary);
-        border: 1px solid var(--border-light);
-        border-radius: 12px;
-        padding: 1.5rem;
-        display: flex;
-        flex-direction: column;
-        text-decoration: none;
-        box-shadow: var(--shadow-sm);
-        transition: var(--transition);
-    }
-    .stat-card:hover {
-        transform: translateY(-5px);
-        box-shadow: var(--shadow-md);
-    }
-    .stat-card-header {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 0.5rem;
         margin-bottom: 1rem;
-    }
-    .stat-icon {
-        width: 48px;
-        height: 48px;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.5rem;
-        flex-shrink: 0;
-    }
-    .icon-budget { background-color: rgba(66, 165, 245, 0.1); color: var(--info); }
-    .icon-invoiced { background-color: rgba(102, 187, 106, 0.1); color: var(--success); }
-    .icon-received { background-color: rgba(93, 64, 55, 0.1); color: var(--primary-medium); }
-    .icon-pending { background-color: rgba(255, 167, 38, 0.1); color: var(--warning); }
-    
-    .stat-title {
-        font-size: 1rem;
-        font-weight: 500;
-        color: var(--text-secondary);
-    }
-    .stat-number {
-        font-size: 1.5rem; /* Slightly smaller for financial data */
-        font-weight: 700;
-        color: var(--primary-dark);
-        line-height: 1;
-    }
-
-    .health-bar-container {
-        margin: 2rem 0;
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 2rem;
-    }
-    .health-bar-card {
-        background: var(--bg-secondary);
-        padding: 1.5rem;
-        border-radius: 12px;
-        box-shadow: var(--shadow-sm);
-    }
-    .health-bar-card h4 { margin: 0 0 1rem 0; font-weight: 500; color: var(--text-secondary); }
-    .progress-bar {
-        width: 100%;
-        height: 12px;
-        background-color: var(--border-light);
+        padding: 0.5rem 0.75rem;
+        background: #f8fafc;
+        border: 1px solid var(--color-border);
         border-radius: 6px;
-        overflow: hidden;
     }
-    .progress-bar-inner {
-        height: 100%;
-        background: linear-gradient(90deg, var(--info), var(--success));
-        border-radius: 6px;
-        transition: width 0.5s ease-out;
-    }
-    .progress-bar-inner.warning {
-        background: linear-gradient(90deg, var(--warning), #f97316);
-    }
-    .health-bar-labels {
-        display: flex;
-        justify-content: space-between;
-        font-size: 0.8rem;
-        margin-top: 0.5rem;
-        color: var(--text-muted);
-    }
+    .accounts-page .summary-item { text-align: right; }
+    .accounts-page .summary-item label { display: block; font-size: 0.7rem; color: var(--color-text-muted); text-transform: uppercase; margin-bottom: 0.15rem; }
+    .accounts-page .summary-item .value { font-weight: 600; font-variant-numeric: tabular-nums; }
+    .accounts-page .progress-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem; }
+    .accounts-page .progress-box { padding: 0.5rem 0.75rem; background: #fff; border: 1px solid var(--color-border); border-radius: 6px; }
+    .accounts-page .progress-box h4 { margin: 0 0 0.35rem 0; font-size: 0.75rem; font-weight: 600; color: var(--color-text-secondary); }
+    .accounts-page .progress-bar { height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden; }
+    .accounts-page .progress-bar-inner { height: 100%; background: var(--color-accent); border-radius: 3px; }
+    .accounts-page .progress-bar-inner.warning { background: var(--color-warning); }
+    .accounts-page .progress-labels { font-size: 0.65rem; color: var(--color-text-muted); margin-top: 0.25rem; }
+    .accounts-page .table-container { font-size: 0.8rem; }
+    .accounts-page .data-table th { padding: 0.35rem 0.6rem; font-size: 0.7rem; }
+    .accounts-page .data-table td { padding: 0.35rem 0.6rem; font-variant-numeric: tabular-nums; }
+    .accounts-page .data-table .num { text-align: right; }
+    .accounts-page .data-table .total-row { background: #f1f5f9; font-weight: 600; border-top: 2px solid var(--color-border); }
 </style>
 
-<div class="dashboard-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-    <div>
-        <h1>Accounts Dashboard</h1>
-        <p class="welcome-text">A high-level financial overview of all studio projects.</p>
-    </div>
-    <div style="display: flex; gap: 0.75rem;">
+<div class="accounts-page">
+<div class="page-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+    <h1 class="page-title">Accounts</h1>
+    <div style="display: flex; gap: 0.5rem;">
+        <a href="{% url 'accounts:incoming_payments' %}" class="btn btn-secondary">Incoming Payments</a>
         <a href="{% url 'invoices:invoice_create_select' %}" class="btn">Create Invoice</a>
-        <a href="{% url 'accounts:export_project_summary' %}" class="btn-secondary">Export as CSV</a>
+        <a href="{% url 'accounts:export_project_summary' %}" class="btn btn-secondary">Export CSV</a>
     </div>
 </div>
 
-<!-- Main Stat Cards -->
-<div class="stats-grid">
-    <!-- Total Project Value Card -->
-    <div class="stat-card">
-        <div class="stat-card-header"><div class="stat-icon icon-budget"></div><h3 class="stat-title">Total Project Value (excl. VAT)</h3></div>
-        <div><p class="stat-number">AED {{ total_project_value|floatformat:2|intcomma }}</p></div>
+<!-- Summary row (accounting-style key figures) -->
+<div class="summary-row">
+    <div class="summary-item">
+        <label>Project Value (ex. VAT)</label>
+        <span class="value">AED {{ total_project_value|floatformat:2|intcomma }}</span>
     </div>
-    <!-- Total Invoiced Card -->
-    <div class="stat-card">
-        <div class="stat-card-header"><div class="stat-icon icon-invoiced"></div><h3 class="stat-title">Total Billed (incl. VAT)</h3></div>
-        <div><p class="stat-number">AED {{ total_amount_invoiced|floatformat:2|intcomma }}</p></div>
+    <div class="summary-item">
+        <label>Billed (inc. VAT)</label>
+        <span class="value">AED {{ total_amount_invoiced|floatformat:2|intcomma }}</span>
     </div>
-    <!-- Total Received Card -->
-    <div class="stat-card">
-        <div class="stat-card-header"><div class="stat-icon icon-received"></div><h3 class="stat-title">Total Received (Payments)</h3></div>
-        <div><p class="stat-number">AED {{ total_amount_received|floatformat:2|intcomma }}</p></div>
+    <div class="summary-item">
+        <label>Received</label>
+        <span class="value">AED {{ total_amount_received|floatformat:2|intcomma }}</span>
     </div>
-    <!-- Accounts Receivable Card -->
-    <div class="stat-card">
-        <div class="stat-card-header"><div class="stat-icon icon-pending"></div><h3 class="stat-title">Total Accounts Receivable</h3></div>
-        <div><p class="stat-number">AED {{ total_pending|floatformat:2|intcomma }}</p></div>
+    <div class="summary-item">
+        <label>Receivable</label>
+        <span class="value">AED {{ total_pending|floatformat:2|intcomma }}</span>
     </div>
-</div>
-
-<!-- Financial Health Bars -->
-<div class="health-bar-container">
-    <!-- Invoicing Progress Card -->
-    <div class="health-bar-card">
-        <h4>Invoicing Progress</h4>
-        <div class="progress-bar">
-            <div class="progress-bar-inner" style="width: {{ invoicing_percentage|floatformat:0 }}%;"></div>
-        </div>
-        <div class="health-bar-labels">
-            <span>0%</span>
-            <span>{{ invoicing_percentage|floatformat:0 }}% of Total Budget Billed</span>
-            <span>100%</span>
-        </div>
-    </div>
-
-    <!-- Payment Progress Card -->
-    <div class="health-bar-card">
-        <h4>Payment Progress</h4>
-        <div class="progress-bar">
-            <div class="progress-bar-inner warning" style="width: {{ payment_percentage|floatformat:0 }}%;"></div>
-        </div>
-        <div class="health-bar-labels">
-            <span>0%</span>
-            <span>{{ payment_percentage|floatformat:0 }}% of Invoiced Amount Received</span>
-            <span>100%</span>
-        </div>
+    <div class="summary-item">
+        <label>Invoiced % / Paid %</label>
+        <span class="value">{{ invoicing_percentage|floatformat:0 }}% / {{ payment_percentage|floatformat:0 }}%</span>
     </div>
 </div>
 
-<!-- Detailed Project Breakdown Table -->
-<h2 style="margin-top: 3rem;">Project Financial Summary</h2>
+<!-- Progress bars (compact) -->
+<div class="progress-row">
+    <div class="progress-box">
+        <h4>Invoicing vs budget</h4>
+        <div class="progress-bar"><div class="progress-bar-inner" style="width: {{ invoicing_percentage|floatformat:0 }}%;"></div></div>
+        <div class="progress-labels">{{ invoicing_percentage|floatformat:0 }}% of budget billed</div>
+    </div>
+    <div class="progress-box">
+        <h4>Collections vs billed</h4>
+        <div class="progress-bar"><div class="progress-bar-inner warning" style="width: {{ payment_percentage|floatformat:0 }}%;"></div></div>
+        <div class="progress-labels">{{ payment_percentage|floatformat:0 }}% of billed received</div>
+    </div>
+</div>
+
+<!-- Project financial summary table -->
 <div class="table-container">
     <table class="data-table">
         <thead>
             <tr>
                 <th>Project / Customer</th>
-                <th style="text-align: right;">Budget (ex. VAT)</th>
-                <th style="text-align: right;">Billed (inc. VAT)</th>
-                <th style="text-align: right;">Received</th>
-                <th style="text-align: right;">Accounts Receivable</th>
+                <th class="num">Budget (ex. VAT)</th>
+                <th class="num">Billed (inc. VAT)</th>
+                <th class="num">Received</th>
+                <th class="num">Receivable</th>
             </tr>
         </thead>
         <tbody>
             {% for project in projects %}
-                <tr>
-                    <td>
-                        <strong><a href="{% url 'projects:project_detail' pk=project.pk %}">{{ project.title }}</a></strong><br>
-                        <small class="text-muted">{{ project.customer.name }}</small>
-                    </td>
-                    <td style="text-align: right;">{{ project.subtotal|floatformat:2|intcomma }}</td>
-                    <td style="text-align: right;">{{ project.total_invoiced_grand|floatformat:2 |intcomma }}</td>
-                    <td style="text-align: right; color: var(--success);">{{ project.total_received|floatformat:2 |intcomma }}</td>
-                    <td style="text-align: right; color: var(--warning); font-weight: bold;">{{ project.accounts_receivable|floatformat:2 |intcomma }}</td>
-                </tr>
+            <tr>
+                <td>
+                    <a href="{% url 'projects:project_detail' pk=project.pk %}">{{ project.title }}</a>
+                    <br><small class="text-muted">{{ project.customer.name }}</small>
+                </td>
+                <td class="num">{{ project.subtotal|floatformat:2|intcomma }}</td>
+                <td class="num">{{ project.total_invoiced_grand|floatformat:2|intcomma }}</td>
+                <td class="num" style="color: var(--color-success);">{{ project.total_received|floatformat:2|intcomma }}</td>
+                <td class="num" style="font-weight: 600;">{{ project.accounts_receivable|floatformat:2|intcomma }}</td>
+            </tr>
             {% empty %}
-                <tr><td colspan="5" class="text-center text-muted">No projects found.</td></tr>
+            <tr><td colspan="5" style="text-align: center; padding: 1rem;" class="text-muted">No projects.</td></tr>
             {% endfor %}
-            <tr style="background: var(--bg-hover); font-weight: bold; border-top: 2px solid var(--border-medium);">
-                <td>GRAND TOTALS</td>
-                <td style="text-align: right;">{{ total_project_value|floatformat:2|intcomma }}</td>
-                <td style="text-align: right;">{{ total_amount_invoiced|floatformat:2|intcomma }}</td>
-                <td style="text-align: right;">{{ total_amount_received|floatformat:2 |intcomma }}</td>
-                <td style="text-align: right;">{{ total_pending|floatformat:2 |intcomma }}</td>
+            <tr class="total-row">
+                <td>Total</td>
+                <td class="num">AED {{ total_project_value|floatformat:2|intcomma }}</td>
+                <td class="num">AED {{ total_amount_invoiced|floatformat:2|intcomma }}</td>
+                <td class="num">AED {{ total_amount_received|floatformat:2|intcomma }}</td>
+                <td class="num">AED {{ total_pending|floatformat:2|intcomma }}</td>
             </tr>
         </tbody>
     </table>
 </div>
-
+</div>
 {% endblock %}

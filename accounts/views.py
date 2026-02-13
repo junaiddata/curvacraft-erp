@@ -18,7 +18,15 @@ from django.contrib.auth.decorators import login_required
 from decimal import Decimal
 
 from projects.models import Project
-from users.decorators import admin_required,role_required
+from users.decorators import admin_required, role_required
+
+@login_required
+@role_required('admin')
+def incoming_payments_list(request):
+    """List all incoming payments with date, mode, remarks, and project."""
+    payments = Payment.objects.select_related('invoice', 'invoice__project', 'invoice__project__customer').order_by('-date_paid')
+    context = {'payments': payments}
+    return render(request, 'accounts/incoming_payments.html', context)
 
 @login_required
 @role_required('admin')

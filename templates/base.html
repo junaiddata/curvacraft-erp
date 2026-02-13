@@ -759,8 +759,13 @@
                             </a>
                         </li>
                         <li>
-                            <a href="{% url 'accounts:dashboard' %}" class="{% if 'accounts' in request.resolver_match.namespace %}active{% endif %}">
+                            <a href="{% url 'accounts:dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
                                 Accounts
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'accounts:incoming_payments' %}" class="{% if request.resolver_match.url_name == 'incoming_payments' %}active{% endif %}">
+                                Incoming Payments
                             </a>
                         </li>
                         <li>
