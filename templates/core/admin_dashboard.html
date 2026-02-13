@@ -41,9 +41,8 @@
     }
 
     .stat-card:hover {
-        transform: translateY(-5px);
         box-shadow: var(--shadow-md);
-        border-color: var(--accent-primary);
+        border-color: var(--border-medium);
     }
 
     .stat-card-header {
@@ -105,7 +104,7 @@
     <!-- Active Projects Card -->
     <a href="{% url 'projects:dashboard' %}" class="stat-card">
         <div class="stat-card-header">
-            <div class="stat-icon icon-projects">📂</div>
+            <div class="stat-icon icon-projects"></div>
             <h3 class="stat-title">Active Projects</h3>
         </div>
         <div class="stat-card-body">
@@ -119,7 +118,7 @@
     <!-- New Enquiries Card -->
     <a href="{% url 'enquiries:enquiry_list' %}" class="stat-card">
         <div class="stat-card-header">
-            <div class="stat-icon icon-enquiries">📧</div>
+            <div class="stat-icon icon-enquiries"></div>
             <h3 class="stat-title">New Enquiries to Review</h3>
         </div>
         <div class="stat-card-body">
@@ -133,7 +132,7 @@
     <!-- Quotes Awaiting Acceptance Card -->
     <a href="{% url 'quotations:quotation_list' %}" class="stat-card">
         <div class="stat-card-header">
-            <div class="stat-icon icon-quotes">📝</div>
+            <div class="stat-icon icon-quotes"></div>
             <h3 class="stat-title">Quotes Awaiting Acceptance</h3>
         </div>
         <div class="stat-card-body">
@@ -145,9 +144,9 @@
     </a>
 
     <!-- Daily Reports to Review Card -->
-    <a href="#" class="stat-card"> <!-- Link can be added later to a dedicated review page -->
+    <a href="{% url 'progress:daily_progress_review_list' %}" class="stat-card">
         <div class="stat-card-header">
-            <div class="stat-icon icon-reports">📋</div>
+            <div class="stat-icon icon-reports"></div>
             <h3 class="stat-title">Daily Reports to Review</h3>
         </div>
         <div class="stat-card-body">
@@ -161,7 +160,7 @@
     <!-- Pending Purchase Orders Card -->
     <a href="{% url 'purchase_orders:po_list' %}" class="stat-card">
         <div class="stat-card-header">
-            <div class="stat-icon icon-pos">📦</div>
+            <div class="stat-icon icon-pos"></div>
             <h3 class="stat-title">Pending Purchase Orders</h3>
         </div>
         <div class="stat-card-body">

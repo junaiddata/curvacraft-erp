@@ -1,25 +1,22 @@
-<!-- templates/registration/login.html -->
 {% extends "base_standalone.html" %}
-
-{% block title %}Login{% endblock %}
-
+{% block title %}Login - Curvacraft Studio{% endblock %}
 {% block content %}
 <div class="auth-container">
     <div class="auth-card">
         <h1 class="auth-brand">
-            <img src="https://curvacraft.com/wp-content/uploads/2024/10/Curvacraft-logo-1024x255.webp" alt="Curvacraft Logo"   class="logo-inverted">
+            <img src="https://curvacraft.com/wp-content/uploads/2024/10/Curvacraft-logo-1024x255.webp" alt="Curvacraft" class="logo-inverted">
         </h1>
-        <h2 class="auth-header">Studio Login</h2>
-        
+        <h2 class="auth-header">Studio Management</h2>
+
         {% if form.errors %}
-            <p style="color: var(--error-color);">Your username and password didn't match. Please try again.</p>
+        <div class="auth-error">Invalid username or password. Please try again.</div>
         {% endif %}
 
         <form method="post">
             {% csrf_token %}
             {{ form.as_p }}
             <div class="form-actions">
-                <button type="submit">Login</button>
+                <button type="submit">Sign In</button>
             </div>
         </form>
     </div>

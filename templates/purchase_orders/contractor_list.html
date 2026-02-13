@@ -1,11 +1,13 @@
 <!-- templates/purchase_orders/contractor_list.html -->
 {% extends "base.html" %}
+{% block title %}Vendors{% endblock %}
 {% block content %}
+<div class="list-page">
 <style>
     .contractor-page-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, var(--primary-dark) 0%, var(--accent-primary) 100%);
         color: white;
-        padding: 2rem;
+        padding: 1rem 1.5rem;
         border-radius: 8px;
         margin-bottom: 2rem;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -13,7 +15,7 @@
     .contractor-page-header h1 {
         margin: 0;
         color: white;
-        font-size: 2rem;
+        font-size: 1.25rem;
     }
     .contractor-page-header .subtitle {
         margin-top: 0.5rem;
@@ -22,7 +24,7 @@
     }
     .contractor-card {
         background: white;
-        border: 2px solid #e0e7ff;
+        border: 2px solid var(--accent-light);
         border-radius: 8px;
         padding: 1.5rem;
         margin-bottom: 1rem;
@@ -30,8 +32,8 @@
         box-shadow: 0 2px 4px rgba(102, 126, 234, 0.1);
     }
     .contractor-card:hover {
-        border-color: #667eea;
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        border-color: var(--accent-primary);
+        box-shadow: 0 4px 12px rgba(139, 105, 20, 0.15);
         transform: translateY(-2px);
     }
     .contractor-card-header {
@@ -40,12 +42,12 @@
         align-items: center;
         margin-bottom: 1rem;
         padding-bottom: 1rem;
-        border-bottom: 2px solid #e0e7ff;
+        border-bottom: 2px solid var(--accent-light);
     }
     .contractor-name {
-        font-size: 1.25rem;
+        font-size: 1rem;
         font-weight: 600;
-        color: #667eea;
+        color: var(--primary-dark);
         margin: 0;
     }
     .contractor-actions {
@@ -53,7 +55,7 @@
         gap: 0.5rem;
     }
     .contractor-actions button {
-        background: #667eea;
+        background: var(--accent-primary);
         color: white;
         border: none;
         padding: 0.5rem 1rem;
@@ -63,7 +65,7 @@
         transition: background 0.2s;
     }
     .contractor-actions button:hover {
-        background: #5568d3;
+        background: var(--primary-medium);
     }
     .contractor-info-grid {
         display: grid;
@@ -88,10 +90,10 @@
     }
     .empty-state {
         text-align: center;
-        padding: 3rem;
+        padding: 2rem;
         background: #f9fafb;
         border-radius: 8px;
-        border: 2px dashed #e0e7ff;
+        border: 2px dashed var(--accent-light);
     }
     .empty-state-icon {
         font-size: 3rem;
@@ -100,21 +102,13 @@
 </style>
 
 <div class="contractor-page-header">
-    <h1>🏗️ Suppliers / Vendors</h1>
-    <p class="subtitle">Manage your Vendors database and vendor information</p>
+    <h1>Vendors</h1>
+    <p class="subtitle">Manage your vendors and purchase orders</p>
 </div>
 
-<div style="margin-bottom: 1.5rem;">
-    <a href="{% url 'purchase_orders:contractor_create' %}">
-        <button style="background: #667eea; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 6px; cursor: pointer; font-weight: 500; margin-right: 0.5rem;">
-            ➕ Add New Contractor
-        </button>
-    </a>
-    <a href="{% url 'purchase_orders:po_list' %}">
-        <button style="background: white; color: #667eea; border: 2px solid #667eea; padding: 0.75rem 1.5rem; border-radius: 6px; cursor: pointer; font-weight: 500;">
-            📋 Back to Purchase Orders
-        </button>
-    </a>
+<div style="margin-bottom: 1rem; display: flex; gap: 0.5rem;">
+    <a href="{% url 'purchase_orders:contractor_create' %}" class="btn">Add Vendor</a>
+    <a href="{% url 'purchase_orders:po_list' %}" class="btn btn-secondary">Purchase Orders</a>
 </div>
 
 {% if contractors %}
@@ -158,13 +152,10 @@
 {% else %}
     <div class="empty-state">
         <div class="empty-state-icon">🏗️</div>
-        <h3 style="color: #667eea; margin-bottom: 0.5rem;">No Suppliers / Vendors yet</h3>
+        <h3 style="color: var(--primary-dark); margin-bottom: 0.5rem;">No vendors yet</h3>
         <p style="color: #6b7280; margin-bottom: 1.5rem;">Get started by adding your first supplier / vendor</p>
-        <a href="{% url 'purchase_orders:contractor_create' %}">
-            <button style="background: #667eea; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 6px; cursor: pointer; font-weight: 500;">
-                Add Your First Supplier / Vendor
-            </button>
-        </a>
+        <a href="{% url 'purchase_orders:contractor_create' %}" class="btn">Add Your First Vendor</a>
     </div>
 {% endif %}
+</div>
 {% endblock %}

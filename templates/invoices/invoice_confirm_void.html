@@ -18,7 +18,7 @@
 
 <form method="post">
     {% csrf_token %}
-    <a href="{% url 'invoices:invoice_detail' pk=invoice.pk %}"><button type="button" class="btn-secondary">Cancel</button></a>
+    <a href="{% url 'invoices:invoice_detail' pk=invoice.pk %}" class="btn-secondary" style="text-decoration: none; padding: 0.5rem 1rem; margin-right: 0.5rem;">Cancel</a>
     <button type="submit" style="background-color: var(--error);">Yes, Void This Invoice</button>
 </form>
 {% endblock %}

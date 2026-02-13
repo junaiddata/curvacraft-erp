@@ -1,34 +1,24 @@
-<!-- templates/reports/dpr_form.html -->
 {% extends "base.html" %}
+{% block title %}{{ action }} Daily Progress Report{% endblock %}
 {% block content %}
-<h1>{{ action }} Daily Progress Report</h1>
-<h4>Project: {{ project.title }}</h4>
-
-<style>
-    /* Shared styles for all tables on this page */
-    .item-table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; }
-    .item-table th, .item-table td { padding: 8px; border: 1px solid var(--border-light); vertical-align: top; }
-    .item-table thead { background-color: var(--bg-hover); }
-    .item-form-row input[type="checkbox"] { display: none; }
-    .delete-btn { background-color: var(--error); color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
-    .item-form-row.marked-for-deletion { opacity: 0.4; background-color: #fee2e2; }
-    .item-form-row.marked-for-deletion input,
-    .item-form-row.marked-for-deletion textarea { pointer-events: none; }
-
-    
-</style>
+<div class="form-page" style="max-width: 1000px; margin: 0 auto;">
+    <div class="page-header" style="flex-direction: column; align-items: flex-start; gap: 0.5rem;">
+        <a href="{% url 'reports:dpr_list' project_pk=project.pk %}" class="text-muted" style="font-size: 0.875rem; text-decoration: none;">&larr; Back to DPRs</a>
+        <h1 class="page-title">{{ action }} Daily Progress Report</h1>
+        <p class="page-subtitle text-muted">Project: {{ project.title }}</p>
+    </div>
 
 <form method="post">
     {% csrf_token %}
-    <div class="card">
-        <div class="card-header"><h3>Main Details</h3></div>
+    <div class="form-section">
+        <h3 class="form-section-title">Main Details</h3>
         {{ form.as_p }}
     </div>
     
-    <!-- Manpower Section -->
-    <div class="card">
-        <div class="card-header"><h3>Staff & Labor (Main Contractor)</h3></div>
-        <table id="manpower-table" class="item-table">
+    <div class="form-section">
+        <h3 class="form-section-title">Staff & Labor (Main Contractor)</h3>
+        <div class="table-container">
+        <table id="manpower-table" class="data-table">
             <thead><tr><th>Staff / Labor</th><th>Day Count</th><th>Night Count</th><th>Action</th></tr></thead>
             <tbody id="manpower-form-list">
                 {{ manpower_formset.management_form }}
@@ -37,22 +27,20 @@
                 {% endfor %}
             </tbody>
         </table>
-        <button type="button" class="add-item-btn btn-secondary" data-prefix="manpower">+ Add Manpower</button>
+        </div>
+        <button type="button" class="add-item-btn btn btn-secondary" data-prefix="manpower" style="margin-top: 1rem;">Add Manpower</button>
     </div>
 
-<!-- Subcontractor Section -->
-<div class="card">
-    <div class="card-header">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <h3>Staff & Labor (Subcontractor)</h3>
-            <!-- THIS IS THE NEW FIELD, PLACED IN THE HEADER -->
-            <div class="form-group" style="margin: 0; width: 40%;">
+    <div class="form-section">
+        <div class="form-section-title" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+            Staff & Labor (Subcontractor)
+            <p style="margin: 0; width: 40%; min-width: 200px;">
                 <label for="{{ form.subcontractor_name.id_for_label }}">Subcontractor Name</label>
                 {{ form.subcontractor_name }}
-            </div>
+            </p>
         </div>
-    </div>
-    <table id="subcontractor-table" class="item-table">
+        <div class="table-container">
+        <table id="subcontractor-table" class="data-table">
         <thead>
             <tr>
                 <!-- REMOVED THE HEADER -->
@@ -75,15 +63,15 @@
             </tr>
             {% endfor %}
         </tbody>
-    </table>
-    <button type="button" class="add-item-btn btn-secondary" data-prefix="subcontractor">+ Add Subcontractor Staff</button>
-</div>
+        </table>
+        </div>
+        <button type="button" class="add-item-btn btn btn-secondary" data-prefix="subcontractor" style="margin-top: 1rem;">Add Subcontractor Staff</button>
+    </div>
 
-
-    <!-- Equipment Section -->
-    <div class="card">
-        <div class="card-header"><h3>Major Equipment on Site</h3></div>
-        <table id="equipment-table" class="item-table">
+    <div class="form-section">
+        <h3 class="form-section-title">Major Equipment on Site</h3>
+        <div class="table-container">
+        <table id="equipment-table" class="data-table">
             <thead><tr><th>Equipment</th><th>Day Count</th><th>Night Count</th><th>Action</th></tr></thead>
             <tbody id="equipment-form-list">
                 {{ equipment_formset.management_form }}
@@ -92,13 +80,16 @@
                 {% endfor %}
             </tbody>
         </table>
-        <button type="button" class="add-item-btn btn-secondary" data-prefix="equipment">+ Add Equipment</button>
+        </div>
+        <button type="button" class="add-item-btn btn btn-secondary" data-prefix="equipment" style="margin-top: 1rem;">Add Equipment</button>
     </div>
-    
-    <div style="text-align: right; margin-top: 2rem;">
-        <button type="submit">Save DPR</button>
+
+    <div class="form-actions">
+        <a href="{% url 'reports:dpr_list' project_pk=project.pk %}" class="btn btn-secondary">Cancel</a>
+        <button type="submit" class="btn">Save DPR</button>
     </div>
 </form>
+</div>
 
 <!-- Hidden Templates for JavaScript -->
 <div id="hidden-templates" style="display:none;">
@@ -137,7 +128,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    document.querySelectorAll('.item-table tbody').forEach(tbody => {
+    document.querySelectorAll('.data-table tbody').forEach(tbody => {
         tbody.addEventListener('click', function(event) {
             if (event.target && event.target.classList.contains('delete-btn')) {
                 const row = event.target.closest('.item-form-row');

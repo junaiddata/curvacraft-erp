@@ -108,9 +108,22 @@ def contractor_delete(request, pk):
 @role_required('admin', 'staff')
 @login_required
 def po_list(request):
-    """List all purchase orders."""
-    purchase_orders = PurchaseOrder.objects.all().select_related('contractor').prefetch_related('items')
-    context = {'purchase_orders': purchase_orders}
+    """List all purchase orders with optional filters."""
+    from django.db.models import Q
+    purchase_orders = PurchaseOrder.objects.select_related('contractor').prefetch_related('items').order_by('-created_at')
+    q = request.GET.get('q', '').strip()
+    status_filter = request.GET.get('status', '').strip()
+    if q:
+        purchase_orders = purchase_orders.filter(
+            Q(po_number__icontains=q) |
+            Q(contractor__name__icontains=q)
+        )
+    if status_filter:
+        purchase_orders = purchase_orders.filter(status=status_filter)
+    context = {
+        'purchase_orders': purchase_orders,
+        'status_choices': PurchaseOrder.POStatus.choices,
+    }
     return render(request, 'purchase_orders/po_list.html', context)
 
 @role_required('admin', 'staff')

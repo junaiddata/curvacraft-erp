@@ -1,0 +1,98 @@
+<!-- templates/invoices/invoice_list.html -->
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Invoices{% endblock %}
+
+{% block content %}
+
+<style>
+    .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
+    .page-header h1 { margin: 0; font-size: 1.75rem; color: var(--primary-dark); }
+    .filter-bar { display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; margin-bottom: 1.5rem; }
+    .filter-bar input, .filter-bar select { padding: 0.5rem 0.75rem; border: 1px solid var(--border-medium); border-radius: 6px; }
+    .filter-bar input[type="text"] { min-width: 200px; }
+    .table-container { background: var(--bg-secondary); border: 1px solid var(--border-light); border-radius: 12px; overflow-x: auto; box-shadow: var(--shadow-sm); }
+    .data-table { width: 100%; border-collapse: collapse; }
+    .data-table th { padding: 0.6rem 1rem; text-align: left; font-weight: 600; font-size: 0.8rem; text-transform: uppercase; background: var(--bg-hover); border-bottom: 2px solid var(--border-medium); }
+    .data-table td { padding: 0.6rem 1rem; border-bottom: 1px solid var(--border-light); }
+    .data-table tbody tr:hover { background: var(--bg-hover); }
+    .status-badge { padding: 0.25rem 0.6rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
+    .status-DRAFT { background: #e2e3e5; color: #333; }
+    .status-SENT { background: #cfe2ff; color: #084298; }
+    .status-PAID { background: #d1e7dd; color: #0f5132; }
+    .status-VOID { background: #f8d7da; color: #842029; }
+    .empty-state { text-align: center; padding: 3rem 2rem; color: var(--text-secondary); }
+</style>
+
+<div class="list-page">
+<div class="page-header">
+    <h1 class="page-title">Invoices</h1>
+    <a href="{% url 'invoices:invoice_create_select' %}" class="btn" style="text-decoration: none; padding: 0.5rem 1rem;">Create Invoice</a>
+</div>
+
+<form method="get" class="filter-bar">
+    <input type="text" name="q" value="{{ request.GET.q }}" placeholder="Search invoice #, project, customer..." aria-label="Search">
+    <select name="status" aria-label="Filter by status">
+        <option value="">All statuses</option>
+        {% for value, label in status_choices %}
+        <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+    </select>
+    <select name="project" aria-label="Filter by project">
+        <option value="">All projects</option>
+        {% for p in projects %}
+        <option value="{{ p.pk }}" {% if request.GET.project == p.pk|stringformat:"d" %}selected{% endif %}>{{ p.title }}</option>
+        {% endfor %}
+    </select>
+    <button type="submit">Filter</button>
+    {% if request.GET.q or request.GET.status or request.GET.project %}
+    <a href="{% url 'invoices:invoice_list' %}" style="color: var(--text-muted); font-size: 0.9rem;">Clear filters</a>
+    {% endif %}
+</form>
+
+<div class="table-container">
+    {% if invoices %}
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Invoice #</th>
+                <th>Project / Customer</th>
+                <th>Date</th>
+                <th style="text-align: right;">Total</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for inv in invoices %}
+            <tr>
+                <td><strong>{{ inv.invoice_number }}</strong></td>
+                <td>
+                    <a href="{% url 'projects:project_detail' pk=inv.project.pk %}">{{ inv.project.title }}</a><br>
+                    <small class="text-muted">{{ inv.project.customer.name }}</small>
+                </td>
+                <td>{{ inv.date|date:"d M Y" }}</td>
+                <td style="text-align: right;">AED {{ inv.grand_total|floatformat:2|intcomma }}</td>
+                <td><span class="status-badge status-{{ inv.status }}">{{ inv.get_status_display }}</span></td>
+                <td>
+                    <a href="{% url 'invoices:invoice_detail' pk=inv.pk %}">View</a>
+                    {% if inv.status != 'VOID' %}
+                    | <a href="{% url 'invoices:invoice_edit' pk=inv.pk %}">Edit</a>
+                    {% endif %}
+                    | <a href="{% url 'invoices:invoice_pdf' pk=inv.pk %}" target="_blank">PDF</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+        <p>No invoices found.</p>
+        <p><a href="{% url 'accounts:dashboard' %}">Go to Accounts</a> or create an invoice from a project.</p>
+    </div>
+    {% endif %}
+</div>
+</div>
+
+{% endblock %}

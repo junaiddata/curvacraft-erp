@@ -8,7 +8,7 @@
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
     <div>
         <h1>Purchase Order #{{ po.po_number }}</h1>
-        <h4>Contractor: {{ po.contractor.name }}</h4>
+        <h4>Vendor: {{ po.contractor.name }}</h4>
     </div>
     <div>
         <!-- Action Buttons -->
@@ -29,15 +29,15 @@
     </form>
 </div>
 
-<!-- CONTRACTOR INFO -->
+<!-- VENDOR INFO -->
 <div style="background: #f8f9fa; padding: 1rem; border-radius: 6px; margin-bottom: 2rem;">
-    <h3>Contractor Information</h3>
+    <h3>Vendor Information</h3>
     <p><strong>Name:</strong> {{ po.contractor.name }}</p>
     {% if po.contractor.contact_person %}<p><strong>Contact Person:</strong> {{ po.contractor.contact_person }}</p>{% endif %}
     {% if po.contractor.email %}<p><strong>Email:</strong> {{ po.contractor.email }}</p>{% endif %}
     {% if po.contractor.phone_number %}<p><strong>Phone:</strong> {{ po.contractor.phone_number }}</p>{% endif %}
     {% if po.contractor.address %}<p><strong>Address:</strong> {{ po.contractor.address }}</p>{% endif %}
-    <a href="{% url 'purchase_orders:contractor_detail' pk=po.contractor.pk %}">View Contractor Details</a>
+    <a href="{% url 'purchase_orders:contractor_detail' pk=po.contractor.pk %}">View Vendor Details</a>
 </div>
 
 <!-- ITEMS TABLE -->

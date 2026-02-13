@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Create Invoice - Select Project{% endblock %}
+{% block content %}
+
+<div class="form-page" style="max-width: 560px; margin: 0 auto;">
+    <div class="page-header" style="flex-direction: column; align-items: flex-start; gap: 0.5rem;">
+        <a href="{% url 'invoices:invoice_list' %}" class="text-muted" style="font-size: 0.875rem; text-decoration: none;">&larr; Back to Invoices</a>
+        <h1 class="page-title">Create Invoice</h1>
+        <p class="page-subtitle text-muted">Select a project to create an invoice for.</p>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-section">
+            <h3 class="form-section-title">Select Project</h3>
+            <p>
+                <label for="id_project">Project</label>
+                <select name="project" id="id_project" required>
+                <option value="">-- Select a project --</option>
+                {% for p in projects %}
+                <option value="{{ p.pk }}">{{ p.title }} ({{ p.customer.name }})</option>
+                {% endfor %}
+                </select>
+            </p>
+        </div>
+        <div class="form-actions">
+            <a href="{% url 'invoices:invoice_list' %}" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn">Continue to Invoice Form</button>
+        </div>
+    </form>
+</div>
+
+{% endblock %}

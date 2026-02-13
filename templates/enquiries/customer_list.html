@@ -1,11 +1,23 @@
 <!-- templates/enquiries/customer_list.html -->
 {% extends "base.html" %}
+{% block title %}Customers{% endblock %}
 {% block content %}
-<div style="display: flex; justify-content: space-between; align-items: center;">
-    <h1>Customers</h1>
-    <a href="{% url 'enquiries:enquiry_create' %}"><button>+ Add New Customer (via Enquiry)</button></a>
+<div class="list-page">
+<div class="page-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+    <h1 class="page-title">Customers</h1>
+    <div style="display: flex; gap: 0.5rem;">
+        <a href="{% url 'enquiries:customer_create' %}" class="btn" style="text-decoration: none; padding: 0.5rem 1rem;">Add Customer</a>
+        <a href="{% url 'enquiries:enquiry_create' %}" class="btn-secondary" style="text-decoration: none; padding: 0.5rem 1rem;">Add via Enquiry</a>
+    </div>
 </div>
-<div class="table-container" style="margin-top: 2rem;">
+<form method="get" class="filter-bar">
+    <input type="text" name="q" value="{{ request.GET.q }}" placeholder="Search by name, email, phone...">
+    <button type="submit" class="btn">Search</button>
+    {% if request.GET.q %}
+    <a href="{% url 'enquiries:customer_list' %}" style="color: var(--text-muted); font-size: 0.9rem;">Clear</a>
+    {% endif %}
+</form>
+<div class="table-container" style="margin-top: 1rem;">
     <table class="data-table">
         <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Actions</th></tr></thead>
         <tbody>
@@ -14,10 +26,11 @@
                 <td>{{ customer.name }}</td>
                 <td>{{ customer.email }}</td>
                 <td>{{ customer.phone_number }}</td>
-                <td><a href="{% url 'enquiries:customer_detail' pk=customer.pk %}"><button class="btn-secondary">View Details</button></a></td>
+                <td><a href="{% url 'enquiries:customer_detail' pk=customer.pk %}" class="btn btn-secondary btn-sm">View</a></td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
+</div>
 </div>
 {% endblock %}

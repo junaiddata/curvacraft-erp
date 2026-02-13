@@ -1,118 +1,35 @@
-<!-- templates/purchase_orders/contractor_form.html -->
 {% extends "base.html" %}
+{% block title %}{{ action }} Vendor{% endblock %}
 {% block content %}
-<style>
-    .contractor-page-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 2rem;
-        border-radius: 8px;
-        margin-bottom: 2rem;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-    .contractor-page-header h1 {
-        margin: 0;
-        color: white;
-        font-size: 2rem;
-    }
-    .contractor-form-card {
-        background: white;
-        border: 2px solid #e0e7ff;
-        border-radius: 8px;
-        padding: 2rem;
-        box-shadow: 0 2px 4px rgba(102, 126, 234, 0.1);
-    }
-    .form-group {
-        margin-bottom: 1.5rem;
-    }
-    .form-group label {
-        display: block;
-        margin-bottom: 0.5rem;
-        color: #667eea;
-        font-weight: 600;
-        font-size: 0.9rem;
-    }
-    .form-group input,
-    .form-group textarea {
-        width: 100%;
-        padding: 0.75rem;
-        border: 2px solid #e0e7ff;
-        border-radius: 6px;
-        font-size: 0.95rem;
-        transition: border-color 0.2s;
-    }
-    .form-group input:focus,
-    .form-group textarea:focus {
-        outline: none;
-        border-color: #667eea;
-    }
-    .form-actions {
-        display: flex;
-        gap: 0.5rem;
-        margin-top: 2rem;
-        padding-top: 1.5rem;
-        border-top: 2px solid #e0e7ff;
-    }
-    .btn-primary {
-        background: #667eea;
-        color: white;
-        border: none;
-        padding: 0.75rem 1.5rem;
-        border-radius: 6px;
-        cursor: pointer;
-        font-weight: 500;
-        transition: background 0.2s;
-    }
-    .btn-primary:hover {
-        background: #5568d3;
-    }
-    .btn-secondary {
-        background: white;
-        color: #667eea;
-        border: 2px solid #667eea;
-        padding: 0.75rem 1.5rem;
-        border-radius: 6px;
-        cursor: pointer;
-        font-weight: 500;
-        transition: all 0.2s;
-    }
-    .btn-secondary:hover {
-        background: #f9fafb;
-    }
-</style>
+<div class="form-page" style="max-width: 640px; margin: 0 auto;">
+    <div class="page-header" style="flex-direction: column; align-items: flex-start; gap: 0.5rem;">
+        {% if contractor %}
+        <a href="{% url 'purchase_orders:contractor_detail' pk=contractor.pk %}" class="text-muted" style="font-size: 0.875rem; text-decoration: none;">&larr; Back to Vendor</a>
+        {% else %}
+        <a href="{% url 'purchase_orders:contractor_list' %}" class="text-muted" style="font-size: 0.875rem; text-decoration: none;">&larr; Back to Vendors</a>
+        {% endif %}
+        <h1 class="page-title">{{ action }} Vendor</h1>
+    </div>
 
-<div class="contractor-page-header">
-    <h1>🏗️ {{ action }} Contractor</h1>
-</div>
-
-<div class="contractor-form-card">
     <form method="post">
         {% csrf_token %}
-        {% for field in form %}
-            <div class="form-group">
+        <div class="form-section">
+            {% for field in form %}
+            <p>
                 {{ field.label_tag }}
                 {{ field }}
-                {% if field.help_text %}
-                    <small style="color: #6b7280; font-size: 0.875rem;">{{ field.help_text }}</small>
-                {% endif %}
-                {% if field.errors %}
-                    <div style="color: #ef4444; font-size: 0.875rem; margin-top: 0.25rem;">
-                        {{ field.errors }}
-                    </div>
-                {% endif %}
-            </div>
-        {% endfor %}
+                {% if field.help_text %}<span class="helptext">{{ field.help_text }}</span>{% endif %}
+                {% if field.errors %}<ul class="errorlist">{{ field.errors }}</ul>{% endif %}
+            </p>
+            {% endfor %}
+        </div>
         <div class="form-actions">
-            <button type="submit" class="btn-primary">💾 Save</button>
             {% if contractor %}
-                <a href="{% url 'purchase_orders:contractor_detail' pk=contractor.pk %}">
-                    <button type="button" class="btn-secondary">Cancel</button>
-                </a>
+            <a href="{% url 'purchase_orders:contractor_detail' pk=contractor.pk %}" class="btn btn-secondary">Cancel</a>
             {% else %}
-                <a href="{% url 'purchase_orders:contractor_list' %}">
-                    <button type="button" class="btn-secondary">Cancel</button>
-                </a>
+            <a href="{% url 'purchase_orders:contractor_list' %}" class="btn btn-secondary">Cancel</a>
             {% endif %}
+            <button type="submit" class="btn">Save Vendor</button>
         </div>
     </form>
 </div>

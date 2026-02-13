@@ -1,0 +1,12 @@
+{% comment %}
+Form page layout - use with: {% include "partials/form_layout.html" with form_title=title form_subtitle=subtitle back_url=url back_text="Back" %}
+Or just use the form-section and form-actions classes in your form.
+{% endcomment %}
+<div class="form-page" style="max-width: 720px; margin: 0 auto;">
+    <div class="page-header" style="flex-direction: column; align-items: flex-start;">
+        <a href="{{ back_url|default:'#' }}" style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem; text-decoration: none;">&larr; {{ back_text|default:"Back" }}</a>
+        <h1 class="page-title">{{ form_title }}</h1>
+        {% if form_subtitle %}<p class="page-subtitle text-muted">{{ form_subtitle }}</p>{% endif %}
+    </div>
+    {% block form_content %}{% endblock %}
+</div>

@@ -1,23 +1,22 @@
-<!-- templates/accounts/credit_note_form.html -->
 {% extends "base.html" %}
 {% load humanize %}
+{% block title %}Issue Credit Note{% endblock %}
 {% block content %}
-<div style="max-width: 700px; margin: 0 auto;">
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-        <h1>Issue Credit Note</h1>
-        <a href="{% url 'invoices:invoice_detail' pk=invoice.pk %}">&larr; Back to Invoice</a>
+<div class="form-page" style="max-width: 560px; margin: 0 auto;">
+    <div class="page-header" style="flex-direction: column; align-items: flex-start; gap: 0.5rem;">
+        <a href="{% url 'invoices:invoice_detail' pk=invoice.pk %}" class="text-muted" style="font-size: 0.875rem; text-decoration: none;">&larr; Back to Invoice</a>
+        <h1 class="page-title">Issue Credit Note</h1>
+        <p class="page-subtitle text-muted">Against Invoice #{{ invoice.invoice_number }} | Amount due: AED {{ invoice.amount_due|intcomma }}</p>
     </div>
-    <h4>Against Invoice #{{ invoice.invoice_number }}</h4>
-    <p class="text-muted">Total amount due: <strong>AED {{ invoice.amount_due|intcomma }}</strong></p>
-
-    <div class="card" style="margin-top: 2rem;">
-        <form method="post">
-            {% csrf_token %}
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-section">
             {{ form.as_p }}
-            <div style="text-align: right; margin-top: 1.5rem;">
-                <button type="submit">Issue Credit Note</button>
-            </div>
-        </form>
-    </div>
+        </div>
+        <div class="form-actions">
+            <a href="{% url 'invoices:invoice_detail' pk=invoice.pk %}" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn">Issue Credit Note</button>
+        </div>
+    </form>
 </div>
 {% endblock %}

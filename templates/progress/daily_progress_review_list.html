@@ -1,0 +1,60 @@
+<!-- templates/progress/daily_progress_review_list.html -->
+{% extends "base.html" %}
+
+{% block title %}Daily Reports to Review{% endblock %}
+
+{% block content %}
+
+<style>
+    .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
+    .page-header h1 { margin: 0; }
+    .table-container { background: var(--bg-secondary); border: 1px solid var(--border-light); border-radius: 12px; overflow-x: auto; }
+    .data-table { width: 100%; border-collapse: collapse; }
+    .data-table th { padding: 0.6rem 1rem; text-align: left; font-weight: 600; font-size: 0.8rem; text-transform: uppercase; background: var(--bg-hover); border-bottom: 2px solid var(--border-medium); }
+    .data-table td { padding: 0.6rem 1rem; border-bottom: 1px solid var(--border-light); }
+    .data-table tbody tr:hover { background: var(--bg-hover); }
+    .empty-state { text-align: center; padding: 3rem 2rem; color: var(--text-secondary); }
+</style>
+
+<div class="page-header">
+    <h1>Daily Reports to Review</h1>
+    <a href="{% url 'core:home' %}">&larr; Back to Dashboard</a>
+</div>
+
+<p class="text-muted">These daily tasks have been submitted by SCOs and are awaiting your review.</p>
+
+<div class="table-container" style="margin-top: 1.5rem;">
+    {% if reports %}
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Project</th>
+                <th>Date</th>
+                <th>Assigned To</th>
+                <th>Planned Task</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for report in reports %}
+            <tr>
+                <td>{{ report.project.title }}</td>
+                <td>{{ report.date|date:"d M Y" }}</td>
+                <td>{{ report.assigned_to.username }}</td>
+                <td>{{ report.planned_task|truncatewords:15 }}</td>
+                <td>
+                    <a href="{% url 'progress:daily_progress_detail' pk=report.pk %}">Review</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+        <p>No daily reports awaiting review.</p>
+        <a href="{% url 'core:home' %}">Back to Dashboard</a>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}

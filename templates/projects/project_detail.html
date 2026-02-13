@@ -57,68 +57,6 @@
     }
     .action-text h4 { margin: 0; font-size: 1.1rem; color: var(--primary-dark); }
     .action-text p { margin: 0; font-size: 0.875rem; color: var(--text-secondary); }
-
-
-    */
-    .invoice-actions-cell {
-        position: relative; /* This is the anchor for the dropdown */
-        text-align: right;
-    }
-    .invoice-actions-toggle {
-        background: transparent;
-        border: none;
-        padding: 8px;
-        cursor: pointer;
-        border-radius: 50%;
-    }
-    .invoice-actions-toggle:hover {
-        background-color: var(--bg-hover);
-    }
-    .invoice-actions-toggle svg {
-        width: 16px;
-        height: 16px;
-        fill: var(--text-secondary);
-        pointer-events: none; /* Prevents clicks on the icon itself */
-    }
-    .invoice-actions-menu {
-        position: absolute;
-        top: 100%;
-        right: 0;
-        background: white;
-        border: 1px solid var(--border-light);
-        border-radius: 8px;
-        box-shadow: var(--shadow-md);
-        list-style: none;
-        padding: 0.5rem 0;
-        margin: 0.5rem 0 0 0;
-        min-width: 160px;
-        z-index: 10;
-        /* Start hidden */
-        opacity: 0;
-        transform: translateY(-10px);
-        pointer-events: none;
-        transition: opacity 0.2s ease, transform 0.2s ease;
-    }
-    .invoice-actions-menu.show {
-        /* Become visible */
-        opacity: 1;
-        transform: translateY(0);
-        pointer-events: auto;
-    }
-    .invoice-actions-menu a {
-        display: block;
-        padding: 0.75rem 1.25rem;
-        color: var(--text-primary);
-        text-decoration: none;
-        font-size: 0.9rem;
-    }
-    .invoice-actions-menu a:hover {
-        background-color: var(--bg-hover);
-    }
-    .invoice-actions-menu .delete-link {
-        color: var(--error);
-        font-weight: 500;
-    }
 </style>
 
 <!-- Page Header with Edit Button -->
@@ -145,7 +83,7 @@
                 <dt>Customer</dt> <dd>{{ project.customer }}</dd>
                 <dt>TRN</dt> <dd>{{ project.customer.trn_number }}</dd>
                 <dt>Location</dt> <dd>{{ project.location }}</dd>
-                <dt>Assigned Contractors</dt>
+                <dt>Project Team</dt>
                 <dd>
                     {% for sco in project.assigned_scos.all %}{{ sco.username }}{% if not forloop.last %}, {% endif %}{% empty %}Not Assigned{% endfor %}
                 </dd>
@@ -158,7 +96,7 @@
             
             <!-- We will create a new URL and page for daily tasks -->
             <a href="{% url 'projects:project_daily_tasks' pk=project.pk %}" class="action-link">
-                <span class="action-icon">📅</span>
+                <span class="action-icon">&#9679;</span>
                 <div class="action-text">
                     <h4>Daily Tasks</h4>
                     <p>View, add, and manage daily progress reports.</p>
@@ -166,7 +104,7 @@
             </a>
             
             <a href="{% url 'projects:project_weekly_reports' pk=project.pk %}" class="action-link">
-                <span class="action-icon">🗓️</span>
+                <span class="action-icon">&#9679;</span>
                 <div class="action-text">
                     <h4>Weekly Reports</h4>
                     <p>Manage high-level weekly summaries.</p>
@@ -175,14 +113,14 @@
 
             <!-- THIS IS THE FIX -->
             <a href="{% url 'reports:dpr_list' project_pk=project.pk %}" class="action-link">
-                <span class="action-icon">📝</span>
+                <span class="action-icon">&#9679;</span>
                 <div class="action-text">
                     <h4>Daily Progress Reports</h4>
                     <p>Manage formal DPRs for this project.</p>
                 </div>
             </a>
             <a href="{% url 'projects:project_tracking_detail' pk=project.pk %}" class="action-link">
-                <span class="action-icon">📈</span>
+                <span class="action-icon">&#9679;</span>
                 <div class="action-text">
                     <h4>Milestone Tracking</h4>
                     <p>Manage the project's design phases and timeline.</p>
@@ -194,19 +132,8 @@
 
     <!-- Column 2: Financials -->
     <div>
-        <!-- Final Budget Card -->
         <div class="card">
-            <div class="card-header"><h3>Final Project Budget</h3></div>
-            <div style="text-align: right;">
-                <p>Subtotal: <strong>{{ project.subtotal|floatformat:2|intcomma }}</strong></p>
-                <p>VAT ({{ project.tax_percentage|floatformat:2 }}%): <strong>{{ project.tax_amount|floatformat:2|intcomma }}</strong></p>
-                <hr>
-                <h4>Grand Total (AED): <strong>{{ project.grand_total|floatformat:2|intcomma }}</strong></h4>
-            </div>
-        </div>
-
-        <div class="card" style="margin-top: 2rem;">
-            <div class="card-header"><h3>Invoicing Summary</h3></div>
+            <div class="card-header"><h3>Budget & Invoicing</h3></div>
             
             <dl class="detail-list">
                 <!-- Section 1: Project Budget Overview -->
@@ -271,21 +198,10 @@
                 </td>
                 <td><span class="text-muted">{{ inv.real_time_status }}</span></td>
                 
-                <td class="invoice-actions-cell">
-                    <!-- This button triggers the dropdown -->
-                    <button type="button" class="invoice-actions-toggle">
-                        <svg viewBox="0 0 24 24"><path d="M12,16A2,2 0 0,1 14,18A2,2 0 0,1 12,20A2,2 0 0,1 10,18A2,2 0 0,1 12,16M12,10A2,2 0 0,1 14,12A2,2 0 0,1 12,14A2,2 0 0,1 10,12A2,2 0 0,1 12,10M12,4A2,2 0 0,1 14,6A2,2 0 0,1 12,8A2,2 0 0,1 10,6A2,2 0 0,1 12,4Z" /></svg>
-                    </button>
-                    <!-- This is the menu that will show/hide -->
-                    <ul class="invoice-actions-menu">
-                        <li><a href="{% url 'invoices:invoice_detail' pk=inv.pk %}">View Details</a></li>
-                        {% if inv.status != 'VOID' %}
-                            <li><a href="{% url 'invoices:invoice_edit' pk=inv.pk %}">Edit</a></li>
-                        {% endif %}
-                        {% if inv.status == 'DRAFT' %}
-                            <li><a href="{% url 'invoices:invoice_delete' pk=inv.pk %}" class="delete-link">Delete</a></li>
-                        {% endif %}
-                    </ul>
+                <td>
+                    <a href="{% url 'invoices:invoice_detail' pk=inv.pk %}">View</a>
+                    {% if inv.status != 'VOID' %} | <a href="{% url 'invoices:invoice_edit' pk=inv.pk %}">Edit</a>{% endif %}
+                    {% if inv.status == 'DRAFT' %} | <a href="{% url 'invoices:invoice_delete' pk=inv.pk %}" style="color: var(--error);">Delete</a>{% endif %}
                 </td>
             </tr>
         {% empty %}
@@ -299,40 +215,5 @@
         </div>
     </div>
 </div>
-
-<script>
-    // Self-contained script for the invoice dropdowns
-    // This script can be safely placed at the end of your content block
-    document.addEventListener('click', function(event) {
-        // Find the toggle button that was clicked, if any
-        const toggleButton = event.target.closest('.invoice-actions-toggle');
-        
-        // Get all dropdown menus on the page
-        const allMenus = document.querySelectorAll('.invoice-actions-menu');
-        
-        // If a toggle button was clicked...
-        if (toggleButton) {
-            // Find the specific menu associated with THIS button
-            const parentCell = toggleButton.closest('.invoice-actions-cell');
-            const targetMenu = parentCell.querySelector('.invoice-actions-menu');
-            
-            // Check if the target menu is already open
-            const isAlreadyOpen = targetMenu.classList.contains('show');
-            
-            // First, close all menus
-            allMenus.forEach(menu => menu.classList.remove('show'));
-            
-            // If the target menu was NOT already open, open it
-            if (!isAlreadyOpen) {
-                targetMenu.classList.add('show');
-            }
-        } 
-        // If the click was anywhere else on the page (not a toggle button)
-        else {
-            // Close all menus
-            allMenus.forEach(menu => menu.classList.remove('show'));
-        }
-    });
-</script>
 
 {% endblock %}

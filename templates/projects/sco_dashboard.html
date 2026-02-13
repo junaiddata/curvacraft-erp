@@ -149,19 +149,19 @@
             <ul class="card-actions">
                 <li>
                     <a href="{% url 'projects:project_daily_tasks' pk=project.pk %}">
-                        <span class="action-label">📅 Manage Daily Tasks</span>
+                        <span class="action-label">Manage Daily Tasks</span>
                         <span class="action-description">View assigned tasks and submit simple progress updates.</span>
                     </a>
                 </li>
                 <li>
                     <a href="{% url 'projects:project_weekly_reports' pk=project.pk %}">
-                        <span class="action-label">🗓️ Manage Weekly Tasks</span>
+                        <span class="action-label">Manage Weekly Tasks</span>
                         <span class="action-description">View and submit weekly summary tasks.</span>
                     </a>
                 </li>
                 <li>
                     <a href="{% url 'reports:dpr_list' project_pk=project.pk %}">
-                        <span class="action-label">📝 Daily Progress Reports (DPR)</span>
+                        <span class="action-label">Daily Progress Reports (DPR)</span>
                         <span class="action-description">Fill out and manage formal daily reports.</span>
                     </a>
                 </li>

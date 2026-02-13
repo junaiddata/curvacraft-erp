@@ -1,77 +1,33 @@
-<!-- templates/projects/project_form.html -->
 {% extends "base.html" %}
 {% load humanize %}
-
+{% block title %}Edit Project{% endblock %}
 {% block content %}
 <style>
-    /* Styles for the line item table (copied from quotation_form.html) */
-    .item-form-row input[type="checkbox"] {
-        display: none;
-    }
-    .delete-btn {
-        background-color: var(--error);
-        color: white;
-        border: none;
-        padding: 5px 10px;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 0.8rem;
-    }
-    .item-form-row.marked-for-deletion {
-        opacity: 0.4;
-        background-color: #fee2e2;
-    }
-    .item-form-row.marked-for-deletion input,
-    .item-form-row.marked-for-deletion textarea {
-        pointer-events: none;
-    }
-
-    /* Styles for the add-related icon */
-    .add-related-widget {
-        display: inline-block;
-        vertical-align: middle;
-        margin-left: 8px;
-    }
-    .add-related-widget:hover {
-        opacity: 0.7;
-    }
-    
-    /* Style for the SCO checkbox list */
-    #id_assigned_scos ul {
-        list-style: none;
-        padding: 0;
-        columns: 2; /* Create two columns for the list */
-    }
-    #id_assigned_scos li {
-        margin-bottom: 0.5rem;
-    }
-        .form-grid-2-col {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 2rem;
-    }
+    .add-related-widget { display: inline-block; vertical-align: middle; margin-left: 8px; }
+    .add-related-widget:hover { opacity: 0.7; }
+    #id_assigned_scos ul { list-style: none; padding: 0; columns: 2; }
+    #id_assigned_scos li { margin-bottom: 0.5rem; }
+    .form-grid-2-col { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
 </style>
 
-<div style="max-width: 900px; margin: 0 auto;">
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-        <h1>Edit Project</h1>
-        <a href="{% url 'projects:project_detail' pk=project.pk %}">&larr; Back to Project Overview</a>
+<div class="form-page" style="max-width: 900px; margin: 0 auto;">
+    <div class="page-header" style="flex-direction: column; align-items: flex-start; gap: 0.5rem;">
+        <a href="{% url 'projects:project_detail' pk=project.pk %}" class="text-muted" style="font-size: 0.875rem; text-decoration: none;">&larr; Back to Project Overview</a>
+        <h1 class="page-title">Edit Project</h1>
+        <p class="page-subtitle text-muted">Finalize the project scope, budget, and team assignments.</p>
+        {% if fitout_quote_exists %}
+        <form method="post" action="{% url 'projects:import_fitout_items' pk=project.pk %}" onsubmit="return confirm('This will add items from the Fitout quote to the current scope. Are you sure?');" style="margin-top: 0.5rem;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-secondary">Copy from Fitout Quote</button>
+        </form>
+        {% endif %}
     </div>
-    <p class="text-muted">Finalize the project scope, budget, and team assignments.</p>
-                <!-- THIS IS THE NEW BUTTON -->
-            {% if fitout_quote_exists %}
-            <form method="post" action="{% url 'projects:import_fitout_items' pk=project.pk %}" onsubmit="return confirm('This will add items from the Fitout quote to the current scope. Are you sure?');">
-                {% csrf_token %}
-                <button type="submit" class="btn-secondary">Copy from Fitout Quote</button>
-            </form>
-            {% endif %}
 
     <form method="post">
         {% csrf_token %}
         
-        <!-- Card for Core Project Details -->
-        <div class="card">
-            <div class="card-header"><h3>Core Details</h3></div>
+        <div class="form-section">
+            <h3 class="form-section-title">Core Details</h3>
             
             <div class="form-group">
                 <label for="{{ form.title.id_for_label }}">Project Title</label>
@@ -87,9 +43,8 @@
                 {{ form.site_engineer }}
         </div>
 
-        <!-- --- THIS IS THE NEW CARD FOR TIMELINE DATES --- -->
-        <div class="card">
-            <div class="card-header"><h3>Project Timeline</h3></div>
+        <div class="form-section">
+            <h3 class="form-section-title">Project Timeline</h3>
             <div class="form-grid-2-col">
                 <div class="form-group">
                     <label for="{{ form.mobilization_date.id_for_label }}">Mobilization Date</label>
@@ -102,11 +57,9 @@
             </div>
         </div>
 
-        <!-- Card for Team Assignment with the "+" button -->
-        <div class="card">
-            <div class="card-header">
-                <div style="display: flex; align-items: center; gap: 1rem;">
-                    <h3>Team Assignment</h3>
+        <div class="form-section">
+            <div class="form-section-title" style="display: flex; align-items: center; gap: 1rem;">
+                Team Assignment
                     <!-- THIS IS THE "ADD NEW SCO" BUTTON -->
                     <a href="{% url 'users:sco_add_popup' %}" class="add-related-widget" id="add_id_assigned_scos" onclick="return showAddAnotherPopup(this);" aria-label="Add Another SCO" title="Add Another SCO">
                         <svg width="12" height="12" viewBox="0 0 12 12" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="false" focusable="false">
@@ -115,26 +68,23 @@
                             <path d="M6 2v8M2 6h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
                         </svg>
                     </a>
-                </div>
             </div>
-            
             <div id="id_assigned_scos">
                 {{ form.assigned_scos }}
             </div>
         </div>
 
-        <!-- Card for Finalized Scope & Budget -->
-        <div class="card">
-            <div class="card-header"><h3>Finalized Scope & Budget</h3></div>
-            
-            <table id="items-table" style="width: 100%; border-collapse: collapse;">
+        <div class="form-section">
+            <h3 class="form-section-title">Finalized Scope & Budget</h3>
+            <div class="table-container">
+            <table id="items-table" class="data-table">
                 <thead>
-                    <tr style="background-color: var(--bg-hover);">
-                        <th style="padding: 10px; text-align: left; width: 50%;">Description</th>
-                        <th style="padding: 10px; text-align: left;">Quantity</th>
-                        <th style="padding: 10px; text-align: left;">Unit</th>
-                        <th style="padding: 10px; text-align: left;">Unit Price</th>
-                        <th style="padding: 10px; text-align: left;">Action</th>
+                    <tr>
+                        <th style="width: 50%;">Description</th>
+                        <th>Quantity</th>
+                        <th>Unit</th>
+                        <th>Unit Price</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody id="item-form-list">
@@ -154,8 +104,7 @@
                     {% endfor %}
                 </tbody>
             </table>
-
-            <!-- Hidden template for new rows -->
+            </div>
             <table style="display:none;">
                 <tbody id="empty-form-template">
                     <tr class="item-form-row">
@@ -172,11 +121,12 @@
                 </tbody>
             </table>
 
-            <button type="button" id="add-item-form" class="btn-secondary" style="margin-top: 1.5rem;">+ Add Another Item</button>
+            <button type="button" id="add-item-form" class="btn btn-secondary" style="margin-top: 1rem;">Add Item</button>
         </div>
 
-        <div style="text-align: right; margin-top: 2rem;">
-            <button type="submit">Save Project Details</button>
+        <div class="form-actions">
+            <a href="{% url 'projects:project_detail' pk=project.pk %}" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn">Save Project Details</button>
         </div>
     </form>
 </div>

@@ -1,99 +1,100 @@
-<!-- templates/base_standalone.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}CURVACRAFT{% endblock %}</title>
+    <title>{% block title %}CURVACRAFT - Studio Management{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --primary-color: #333;
-            --secondary-color: #A1887F;
-            --background-color: #f8f9fa;
-            --border-color: #dee2e6;
-            --error-color: #dc3545;
-        }
-
-        /* --- THIS IS THE FIX --- */
-        /* Apply a better box model to all elements */
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background-color: var(--background-color);
-            color: var(--primary-color);
-            /* Removed margin: 0; as it's now in the * rule */
+            font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #f8fafc;
+            color: #1e293b;
+            min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            min-height: 100vh;
+            padding: 1.5rem;
         }
         .auth-container {
             width: 100%;
-            max-width: 420px;
-            padding: 1.5rem;
+            max-width: 400px;
         }
         .auth-card {
             background: #fff;
-            padding: 2.5rem;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.07);
         }
         .auth-brand {
             text-align: center;
             margin-bottom: 0.5rem;
         }
         .auth-brand img {
-            max-width: 250px;
+            max-width: 220px;
             height: auto;
         }
-        .auth-brand img.logo-inverted {
-            filter: invert(1);
-        }
+        .auth-brand img.logo-inverted { filter: invert(1); }
         .auth-header {
             text-align: center;
-            font-size: 1.2rem;
-            color: #6c757d;
-            margin-bottom: 2rem;
+            font-size: 1rem;
+            color: #64748b;
+            margin-bottom: 1.5rem;
             font-weight: 500;
         }
-        form p {
-            margin-bottom: 1rem;
-        }
+        form p { margin-bottom: 1.25rem; }
         label {
             display: block;
-            margin-bottom: 0.5rem;
-            font-weight: bold;
+            margin-bottom: 0.375rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #1e293b;
         }
-        input[type="text"], input[type="password"] {
+        input[type="text"], input[type="password"], input[type="email"] {
             width: 100%;
-            padding: 0.75rem;
-            border: 1px solid var(--border-color);
+            padding: 0.625rem 0.875rem;
+            border: 1px solid #e2e8f0;
             border-radius: 6px;
-            font-size: 1rem;
-            /* box-sizing is now handled globally */
+            font-size: 0.875rem;
+            transition: border-color 0.15s, box-shadow 0.15s;
         }
-        .form-actions {
-            margin-top: 1.5rem;
+        input:focus {
+            outline: none;
+            border-color: #8b6914;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
         }
-        button {
+        .form-actions { margin-top: 1.5rem; }
+        button, .btn {
             width: 100%;
-            background-color: var(--secondary-color);
+            background: #5c4033;
             color: white;
             border: none;
-            padding: 0.75rem 1.5rem;
+            padding: 0.625rem 1.25rem;
             border-radius: 6px;
-            font-size: 1rem;
-            font-weight: bold;
+            font-size: 0.875rem;
+            font-weight: 500;
             cursor: pointer;
-            transition: opacity 0.2s;
+            transition: background-color 0.2s;
         }
-        button:hover {
-            opacity: 0.85;
+        button:hover, .btn:hover { background: #2c5282; }
+        .errorlist {
+            list-style: none;
+            padding: 0;
+            margin: 0.25rem 0 0 0;
+            font-size: 0.8125rem;
+            color: #dc2626;
+        }
+        .auth-error {
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            background: #fee2e2;
+            color: #dc2626;
+            font-size: 0.875rem;
+            border-radius: 6px;
         }
     </style>
 </head>
@@ -101,11 +102,3 @@
     {% block content %}{% endblock %}
 </body>
 </html>
-
-<!-- ### **Summary of the Fix**
-
-By adding the universal selector `*` with `box-sizing: border-box;`, you are telling every element on your page:
-
-> "When I set your `width` to `100%`, I mean your *total visible width*, including your padding. Do not add the padding on the outside; fit it on the inside."
-
-This completely solves the horizontal overflow problem. Your login page will now be perfectly centered and stable on all mobile devices, with no "shaking" or side-to-side scrolling. -->

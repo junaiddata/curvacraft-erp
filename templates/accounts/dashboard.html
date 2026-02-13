@@ -99,34 +99,37 @@
     }
 </style>
 
-<div class="dashboard-header" style="display: flex; justify-content: space-between; align-items: center;">
+<div class="dashboard-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
     <div>
         <h1>Accounts Dashboard</h1>
         <p class="welcome-text">A high-level financial overview of all studio projects.</p>
     </div>
-    <a href="{% url 'accounts:export_project_summary' %}" class="btn-secondary">Export as CSV</a>
+    <div style="display: flex; gap: 0.75rem;">
+        <a href="{% url 'invoices:invoice_create_select' %}" class="btn">Create Invoice</a>
+        <a href="{% url 'accounts:export_project_summary' %}" class="btn-secondary">Export as CSV</a>
+    </div>
 </div>
 
 <!-- Main Stat Cards -->
 <div class="stats-grid">
     <!-- Total Project Value Card -->
     <div class="stat-card">
-        <div class="stat-card-header"><div class="stat-icon icon-budget">💼</div><h3 class="stat-title">Total Project Value (excl. VAT)</h3></div>
+        <div class="stat-card-header"><div class="stat-icon icon-budget"></div><h3 class="stat-title">Total Project Value (excl. VAT)</h3></div>
         <div><p class="stat-number">AED {{ total_project_value|floatformat:2|intcomma }}</p></div>
     </div>
     <!-- Total Invoiced Card -->
     <div class="stat-card">
-        <div class="stat-card-header"><div class="stat-icon icon-invoiced">📄</div><h3 class="stat-title">Total Billed (incl. VAT)</h3></div>
+        <div class="stat-card-header"><div class="stat-icon icon-invoiced"></div><h3 class="stat-title">Total Billed (incl. VAT)</h3></div>
         <div><p class="stat-number">AED {{ total_amount_invoiced|floatformat:2|intcomma }}</p></div>
     </div>
     <!-- Total Received Card -->
     <div class="stat-card">
-        <div class="stat-card-header"><div class="stat-icon icon-received">💰</div><h3 class="stat-title">Total Received (Payments)</h3></div>
+        <div class="stat-card-header"><div class="stat-icon icon-received"></div><h3 class="stat-title">Total Received (Payments)</h3></div>
         <div><p class="stat-number">AED {{ total_amount_received|floatformat:2|intcomma }}</p></div>
     </div>
     <!-- Accounts Receivable Card -->
     <div class="stat-card">
-        <div class="stat-card-header"><div class="stat-icon icon-pending">⏳</div><h3 class="stat-title">Total Accounts Receivable</h3></div>
+        <div class="stat-card-header"><div class="stat-icon icon-pending"></div><h3 class="stat-title">Total Accounts Receivable</h3></div>
         <div><p class="stat-number">AED {{ total_pending|floatformat:2|intcomma }}</p></div>
     </div>
 </div>

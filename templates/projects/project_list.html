@@ -6,6 +6,8 @@
 {% block content %}
 
 <style>
+    .btn-primary { background: var(--primary-dark); color: white; padding: 0.5rem 1rem; border-radius: 6px; font-size: 0.875rem; font-weight: 500; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; }
+    .btn-primary:hover { background: var(--primary-medium); color: white; }
     /* Page Header */
     .page-header {
         display: flex;
@@ -82,11 +84,11 @@
     }
     
     .data-table thead {
-        background: linear-gradient(135deg, #f8f9fa 0%, #f1f3f5 100%);
+        background: #f1f5f9;
     }
     
     .data-table th {
-        padding: 1rem 1.25rem;
+        padding: 0.6rem 1rem;
         text-align: left;
         font-weight: 600;
         font-size: 0.875rem;
@@ -97,7 +99,7 @@
     }
     
     .data-table td {
-        padding: 1.25rem 1.25rem;
+        padding: 0.6rem 1rem;
         text-align: left;
         border-bottom: 1px solid var(--border-light);
         color: var(--text-primary);
@@ -130,22 +132,11 @@
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
     
-    .status-not_started { 
-        background: linear-gradient(135deg, #6c757d, #5a6268);
-    }
-    .status-in_progress { 
-        background: linear-gradient(135deg, #007bff, #0056b3);
-    }
-    .status-on_hold { 
-        background: linear-gradient(135deg, #ffc107, #e0a800);
-        color: #333;
-    }
-    .status-completed { 
-        background: linear-gradient(135deg, #28a745, #1e7e34);
-    }
-    .status-cancelled { 
-        background: linear-gradient(135deg, #dc3545, #c82333);
-    }
+    .status-not_started { background: #94a3b8; }
+    .status-in_progress { background: var(--accent-primary); }
+    .status-on_hold { background: #d97706; color: white; }
+    .status-completed { background: #059669; }
+    .status-cancelled { background: #dc2626; }
     
     /* Action Buttons */
     .action-buttons {
@@ -169,41 +160,12 @@
         gap: 0.4rem;
     }
     
-    .btn-view {
-        background: linear-gradient(135deg, var(--info), #2196F3);
-        color: white;
-        box-shadow: 0 2px 4px rgba(66, 165, 245, 0.3);
-    }
-    
-    .btn-view:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 8px rgba(66, 165, 245, 0.4);
-        color: white;
-    }
-    
-    .btn-edit {
-        background: linear-gradient(135deg, var(--warning), #FF9800);
-        color: white;
-        box-shadow: 0 2px 4px rgba(255, 167, 38, 0.3);
-    }
-    
-    .btn-edit:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 8px rgba(255, 167, 38, 0.4);
-        color: white;
-    }
-    
-    .btn-delete {
-        background: linear-gradient(135deg, var(--error), #d32f2f);
-        color: white;
-        box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
-    }
-    
-    .btn-delete:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 8px rgba(239, 68, 68, 0.4);
-        color: white;
-    }
+    .btn-view { background: var(--accent-primary); color: white; }
+    .btn-view:hover { background: var(--primary-medium); color: white; }
+    .btn-edit { background: #d97706; color: white; }
+    .btn-edit:hover { background: #b45309; color: white; }
+    .btn-delete { background: #dc2626; color: white; }
+    .btn-delete:hover { background: #b91c1c; color: white; }
     
     /* Customer and Location Styling */
     .customer-name {
@@ -224,7 +186,7 @@
     }
     
     .sco-badge {
-        background: linear-gradient(135deg, var(--accent-light), var(--accent-secondary));
+        background: var(--accent-light);
         color: var(--primary-dark);
         padding: 0.3rem 0.7rem;
         border-radius: 12px;
@@ -294,15 +256,30 @@
     }
 </style>
 
+<div class="list-page">
 <div class="page-header">
-    <h1>📋 All Projects</h1>
+    <h1>All Projects</h1>
     <div class="header-actions">
         <a href="{% url 'projects:project_create_direct' %}" class="btn-primary">
-            <span class="btn-icon">➕</span>
+            <span class="btn-icon">+</span>
             <span>Create Direct Project</span>
         </a>
     </div>
 </div>
+
+<form method="get" class="filter-bar" style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; margin-bottom: 1.5rem;">
+    <input type="text" name="q" value="{{ request.GET.q }}" placeholder="Search by title, customer, location..." style="padding: 0.5rem 0.75rem; border: 1px solid var(--border-medium); border-radius: 6px; min-width: 220px;">
+    <select name="status" style="padding: 0.5rem 0.75rem; border: 1px solid var(--border-medium); border-radius: 6px;">
+        <option value="">All statuses</option>
+        {% for value, label in status_choices %}
+        <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+    </select>
+    <button type="submit">Filter</button>
+    {% if request.GET.q or request.GET.status %}
+    <a href="{% url 'projects:dashboard' %}" style="color: var(--text-muted); font-size: 0.9rem;">Clear filters</a>
+    {% endif %}
+</form>
 
 <div class="table-container">
     {% if projects %}
@@ -312,7 +289,7 @@
                     <th>Project Title</th>
                     <th>Customer</th>
                     <th>Location</th>
-                    <th>Assigned SCOs</th>
+                    <th>Project Team</th>
                     <th>Status</th>
                     <th>Actions</th>
                 </tr>
@@ -337,7 +314,7 @@
                                     {% endfor %}
                                 </div>
                             {% else %}
-                                <span class="sco-empty">Not Assigned</span>
+                                <span class="sco-empty">None</span>
                             {% endif %}
                         </td>
                         <td>
@@ -348,15 +325,12 @@
                         <td>
                             <div class="action-buttons">
                                 <a href="{% url 'projects:project_detail' pk=project.pk %}" class="btn-action btn-view">
-                                    <span>👁️</span>
                                     <span>View</span>
                                 </a>
                                 <a href="{% url 'projects:project_edit' pk=project.pk %}" class="btn-action btn-edit">
-                                    <span>✏️</span>
                                     <span>Edit</span>
                                 </a>
                                 <a href="{% url 'projects:project_delete' pk=project.pk %}" class="btn-action btn-delete">
-                                    <span>🗑️</span>
                                     <span>Delete</span>
                                 </a>
                             </div>
@@ -366,16 +340,9 @@
             </tbody>
         </table>
     {% else %}
-        <div class="empty-state">
-            <div class="empty-state-icon">📁</div>
-            <h3>No Projects Yet</h3>
-            <p>Get started by creating your first project</p>
-            <a href="{% url 'projects:project_create_direct' %}" class="btn-primary">
-                <span class="btn-icon">➕</span>
-                <span>Create Your First Project</span>
-            </a>
-        </div>
+        {% include "partials/empty_state.html" with title="No Projects Yet" message="Get started by creating your first project." action_label="Create Your First Project" action_url_name="projects:project_create_direct" %}
     {% endif %}
+</div>
 </div>
 
 {% endblock %}

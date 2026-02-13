@@ -1,52 +1,41 @@
 {% extends "base.html" %}
+{% block title %}Create Enquiry{% endblock %}
 {% block content %}
-<style>
-    .customer-tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border-light); }
-    .tab-btn { padding: 0.75rem 1.5rem; border: 1px solid transparent; border-bottom: none; border-radius: 6px 6px 0 0; cursor: pointer; background: transparent; font-weight: 500; color: var(--text-secondary); }
-    .tab-btn.active { background: var(--bg-secondary); border-color: var(--border-light); border-bottom-color: var(--bg-secondary); color: var(--primary-dark); }
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
-</style>
 
-<div style="max-width: 800px; margin: 0 auto;">
-    <h1>Create Enquiry</h1>
-    
+<div class="form-page" style="max-width: 800px; margin: 0 auto;">
+    <div class="page-header" style="flex-direction: column; align-items: flex-start; gap: 0.5rem;">
+        <a href="{% url 'enquiries:enquiry_list' %}" class="text-muted" style="font-size: 0.875rem; text-decoration: none;">&larr; Back to Enquiries</a>
+        <h1 class="page-title">Create Enquiry</h1>
+    </div>
+
     <form method="post">
         {% csrf_token %}
+        <input type="hidden" name="form_type" value="existing" id="form_type_input">
 
-        <div class="card">
-            <div class="card-header"><h3>Customer Details</h3></div>
-            
-            <div class="customer-tabs">
+        <div class="form-section card">
+            <h3 class="form-section-title">Customer Details</h3>
+            <div class="tabs">
                 <button type="button" class="tab-btn active" data-tab="existing">Existing Customer</button>
                 <button type="button" class="tab-btn" data-tab="new">New Customer</button>
             </div>
-
-            <!-- THIS IS THE SINGLE HIDDEN INPUT, PLACED OUTSIDE THE TABS -->
-            <input type="hidden" name="form_type" value="existing" id="form_type_input">
-
-            <!-- Existing Customer Tab -->
             <div id="tab-existing" class="tab-content active">
-                <!-- The old hidden input is REMOVED from here -->
                 {{ existing_customer_form.as_p }}
             </div>
-
-            <!-- New Customer Tab -->
             <div id="tab-new" class="tab-content">
                 {{ new_customer_form.as_p }}
             </div>
         </div>
-        
-        <div class="card">
-            <div class="card-header"><h3>Project Details</h3></div>
+
+        <div class="form-section card">
+            <h3 class="form-section-title">Project Details</h3>
             {{ enquiry_form.as_p }}
         </div>
 
-        <div class="form-actions" style="text-align: right;">
-            <button type="submit">Save Enquiry</button>
+        <div class="form-actions">
+            <a href="{% url 'enquiries:enquiry_list' %}" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn">Save Enquiry</button>
         </div>
     </form>
-
 </div>
 
 <script>

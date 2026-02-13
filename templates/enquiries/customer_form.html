@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Add Customer{% endblock %}
+{% block content %}
+
+<div class="form-page" style="max-width: 640px; margin: 0 auto;">
+    <div class="page-header" style="flex-direction: column; align-items: flex-start; gap: 0.5rem;">
+        <a href="{% url 'enquiries:customer_list' %}" class="text-muted" style="font-size: 0.875rem; text-decoration: none;">&larr; Back to Customers</a>
+        <h1 class="page-title">Add Customer</h1>
+        <p class="page-subtitle text-muted">Add a new customer to the database.</p>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-section">
+            <h3 class="form-section-title">Customer Information</h3>
+            {{ form.as_p }}
+        </div>
+        <div class="form-actions">
+            <a href="{% url 'enquiries:customer_list' %}" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn">Save Customer</button>
+        </div>
+    </form>
+</div>
+
+{% endblock %}

@@ -3,8 +3,21 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from users.decorators import role_required
 from .models import DailyProgress
 from .forms import SCOProgressUpdateForm, AdminReviewForm
+
+
+@login_required
+@role_required('admin')
+def daily_progress_review_list(request):
+    """List all DailyProgress items with status=SUBMITTED awaiting admin review."""
+    reports = DailyProgress.objects.filter(status='SUBMITTED').select_related(
+        'project', 'assigned_to'
+    ).order_by('date', 'project__title')
+    context = {'reports': reports}
+    return render(request, 'progress/daily_progress_review_list.html', context)
+
 
 @login_required
 def daily_progress_detail(request, pk):

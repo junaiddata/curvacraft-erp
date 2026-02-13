@@ -1,16 +1,20 @@
-<!-- templates/enquiries/customer_edit_form.html -->
 {% extends "base.html" %}
+{% block title %}Edit Customer{% endblock %}
 {% block content %}
-<div style="max-width: 700px; margin: 0 auto;">
-    <h1>Edit Customer: {{ customer.name }}</h1>
-    <div class="card" style="margin-top: 2rem;">
-        <form method="post">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <div style="text-align: right; margin-top: 1.5rem;">
-                <button type="submit">Save Changes</button>
-            </div>
-        </form>
+<div class="form-page" style="max-width: 640px; margin: 0 auto;">
+    <div class="page-header" style="flex-direction: column; align-items: flex-start; gap: 0.5rem;">
+        <a href="{% url 'enquiries:customer_detail' pk=customer.pk %}" class="text-muted" style="font-size: 0.875rem; text-decoration: none;">&larr; Back to Customer</a>
+        <h1 class="page-title">Edit Customer: {{ customer.name }}</h1>
     </div>
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-section">
+            {{ form.as_p }}
+        </div>
+        <div class="form-actions">
+            <a href="{% url 'enquiries:customer_detail' pk=customer.pk %}" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn">Save Changes</button>
+        </div>
+    </form>
 </div>
 {% endblock %}

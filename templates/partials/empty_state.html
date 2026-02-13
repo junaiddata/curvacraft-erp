@@ -1,0 +1,11 @@
+{% comment %}
+Usage: {% include "partials/empty_state.html" with title="No Projects" message="Get started by creating your first project." action_label="Create Project" action_url_name="projects:project_create_direct" %}
+{% endcomment %}
+<div class="empty-state" style="text-align: center; padding: 3rem 2rem; color: var(--text-secondary);">
+    {% if icon %}<div style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.4;">{{ icon }}</div>{% endif %}
+    <h3 style="color: var(--text-primary); margin-bottom: 0.5rem;">{{ title|default:"No Items" }}</h3>
+    <p style="margin-bottom: 1.5rem;">{{ message|default:"Get started by creating your first item." }}</p>
+    {% if action_url_name and action_label %}
+    <a href="{% url action_url_name %}" class="btn" style="text-decoration: none; padding: 0.5rem 1rem;">{{ action_label }}</a>
+    {% endif %}
+</div>

@@ -1,74 +1,80 @@
 <!-- templates/quotations/quotation_list.html -->
 {% extends "base.html" %}
+{% block title %}Quotations{% endblock %}
 {% block content %}
-<h1>Quotation Management Dashboard</h1>
-<p>Manage Design and Fitout quotations for qualified enquiries.</p>
-<hr>
+<div class="list-page">
+<style>
+    .table-container { background: var(--bg-secondary); border: 1px solid var(--border-light); border-radius: 12px; overflow-x: auto; box-shadow: var(--shadow-sm); }
+    .data-table { width: 100%; border-collapse: collapse; }
+    .data-table th { padding: 0.6rem 1rem; text-align: left; font-weight: 600; font-size: 0.8rem; text-transform: uppercase; background: var(--bg-hover); border-bottom: 2px solid var(--border-medium); }
+    .data-table td { padding: 0.6rem 1rem; border-bottom: 1px solid var(--border-light); }
+    .data-table tbody tr:hover { background: var(--bg-hover); }
+    .status-ok { color: var(--success); }
+    .status-muted { color: var(--text-muted); }
+</style>
 
-{% for enquiry in enquiries %}
-    <div style="border: 1px solid #ddd; padding: 15px; margin-bottom: 15px;">
-        <h4>
-            Project / Enquiry: {{ enquiry.customer.name }} - {{ enquiry.location }}
-        </h4>
-        <p>
-            <small>Enquiry Status: {{ enquiry.get_status_display }} | 
-            <a href="{% url 'enquiries:enquiry_detail' pk=enquiry.pk %}">View Enquiry Details</a></small>
-        </p>
+<div class="page-header">
+    <h1 class="page-title">Quotations</h1>
+    <p class="page-subtitle text-muted">Design & Fitout for qualified enquiries</p>
+</div>
 
-        <table style="width:100%; border-collapse: collapse;">
-            <tr style="background-color: #f4f4f4;">
-                <th style="padding: 8px; text-align: left;">Quotation Type</th>
-                <th style="padding: 8px; text-align: left;">Status</th>
-                <th style="padding: 8px; text-align: left;">Actions</th>
-            </tr>
-            
-            <!-- DESIGN QUOTE ROW -->
+<div class="table-container">
+    {% if enquiries %}
+    <table class="data-table">
+        <thead>
             <tr>
-                <td style="padding: 8px; border-top: 1px solid #ddd;"><strong>Design Quote</strong></td>
-                <td style="padding: 8px; border-top: 1px solid #ddd;">
+                <th>Enquiry / Customer</th>
+                <th>Location</th>
+                <th>Design Quote</th>
+                <th>Fitout Quote</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for enquiry in enquiries %}
+            <tr>
+                <td>
+                    <strong>{{ enquiry.customer.name }}</strong><br>
+                    <small class="text-muted">{{ enquiry.get_project_type_display }} | {{ enquiry.get_status_display }}</small>
+                </td>
+                <td>{{ enquiry.location }}</td>
+                <td>
                     {% if enquiry.design_quote %}
                         {{ enquiry.design_quote.get_status_display }}
                     {% else %}
-                        <span style="color: #888;">Not Created</span>
+                        <span class="status-muted">Not Created</span>
                     {% endif %}
                 </td>
-                <td style="padding: 8px; border-top: 1px solid #ddd;">
-                    {% if enquiry.design_quote %}
-                        <!-- If quote exists, show View and Manage buttons -->
-                        <a href="{% url 'quotations:quotation_detail' pk=enquiry.design_quote.pk %}"><button>View Details</button></a>
-                        <a href="{% url 'quotations:manage_quotation' enquiry_pk=enquiry.pk quote_type='DESIGN' %}"><button>Manage</button></a>
-                    {% else %}
-                        <!-- If quote does not exist, show only Create button -->
-                        <a href="{% url 'quotations:manage_quotation' enquiry_pk=enquiry.pk quote_type='DESIGN' %}"><button>Create</button></a>
-                    {% endif %}
-                </td>
-            </tr>
-
-            <!-- FITOUT QUOTE ROW -->
-            <tr>
-                <td style="padding: 8px; border-top: 1px solid #ddd;"><strong>Fitout Quote</strong></td>
-                <td style="padding: 8px; border-top: 1px solid #ddd;">
+                <td>
                     {% if enquiry.fitout_quote %}
                         {{ enquiry.fitout_quote.get_status_display }}
                     {% else %}
-                        <span style="color: #888;">Not Created</span>
+                        <span class="status-muted">Not Created</span>
                     {% endif %}
                 </td>
-                <td style="padding: 8px; border-top: 1px solid #ddd;">
-                     {% if enquiry.fitout_quote %}
-                        <!-- If quote exists, show View and Manage buttons -->
-                        <a href="{% url 'quotations:quotation_detail' pk=enquiry.fitout_quote.pk %}"><button>View Details</button></a>
-                        <a href="{% url 'quotations:manage_quotation' enquiry_pk=enquiry.pk quote_type='FITOUT' %}"><button>Manage</button></a>
+                <td>
+                    <a href="{% url 'enquiries:enquiry_detail' pk=enquiry.pk %}">Enquiry</a>
+                    {% if enquiry.design_quote %}
+                    | <a href="{% url 'quotations:quotation_detail' pk=enquiry.design_quote.pk %}">Design</a>
                     {% else %}
-                        <!-- If quote does not exist, show only Create button -->
-                        <a href="{% url 'quotations:manage_quotation' enquiry_pk=enquiry.pk quote_type='FITOUT' %}"><button>Create</button></a>
+                    | <a href="{% url 'quotations:manage_quotation' enquiry_pk=enquiry.pk quote_type='DESIGN' %}">Create Design</a>
+                    {% endif %}
+                    {% if enquiry.fitout_quote %}
+                    | <a href="{% url 'quotations:quotation_detail' pk=enquiry.fitout_quote.pk %}">Fitout</a>
+                    {% else %}
+                    | <a href="{% url 'quotations:manage_quotation' enquiry_pk=enquiry.pk quote_type='FITOUT' %}">Create Fitout</a>
                     {% endif %}
                 </td>
             </tr>
-        </table>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div style="text-align: center; padding: 3rem; color: var(--text-secondary);">
+        <p>No qualified enquiries found. Create an enquiry and qualify it to manage quotations here.</p>
+        <a href="{% url 'enquiries:enquiry_list' %}">View Enquiries</a>
     </div>
-{% empty %}
-    <p>No qualified enquiries found. Create an enquiry and qualify it to manage its quotations here.</p>
-{% endfor %}
-
+    {% endif %}
+</div>
+</div>
 {% endblock %}

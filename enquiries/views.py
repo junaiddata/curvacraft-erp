@@ -12,8 +12,23 @@ from users.decorators import admin_required,role_required# Import the decorator
 @role_required('admin','staff')
 @login_required
 def enquiry_list(request):
-    enquiries = Enquiry.objects.all().order_by('-created_at')
-    return render(request, 'enquiries/enquiry_list.html', {'enquiries': enquiries})
+    from django.db.models import Q
+    enquiries = Enquiry.objects.select_related('customer').order_by('-created_at')
+    q = request.GET.get('q', '').strip()
+    status_filter = request.GET.get('status', '').strip()
+    if q:
+        enquiries = enquiries.filter(
+            Q(customer__name__icontains=q) |
+            Q(location__icontains=q) |
+            Q(scope__icontains=q)
+        )
+    if status_filter:
+        enquiries = enquiries.filter(status=status_filter)
+    context = {
+        'enquiries': enquiries,
+        'status_choices': Enquiry.EnquiryStatus.choices,
+    }
+    return render(request, 'enquiries/enquiry_list.html', context)
 
 @login_required
 @role_required('admin', 'staff')
@@ -160,9 +175,35 @@ def enquiry_delete(request, pk):
 
 @login_required
 @role_required('admin', 'staff')
+def customer_create(request):
+    """Add a new customer directly (without creating an enquiry)."""
+    if request.method == 'POST':
+        form = CustomerForm(request.POST)
+        if form.is_valid():
+            customer = form.save()
+            messages.success(request, f"Customer {customer.name} has been added.")
+            return redirect('enquiries:customer_list')
+        else:
+            messages.error(request, "Please correct the errors below.")
+    else:
+        form = CustomerForm()
+    context = {'form': form}
+    return render(request, 'enquiries/customer_form.html', context)
+
+
+@login_required
+@role_required('admin', 'staff')
 def customer_list(request):
     """Displays a searchable list of all customers."""
+    from django.db.models import Q
     customers = Customer.objects.all().order_by('name')
+    q = request.GET.get('q', '').strip()
+    if q:
+        customers = customers.filter(
+            Q(name__icontains=q) |
+            Q(email__icontains=q) |
+            Q(phone_number__icontains=q)
+        )
     context = {'customers': customers}
     return render(request, 'enquiries/customer_list.html', context)
 

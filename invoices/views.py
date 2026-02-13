@@ -33,6 +33,45 @@ from .pdf_utils import NumberedCanvas, process_logo, LineSeparator
 # -----------------
 
 @login_required
+@role_required('admin')
+def invoice_list(request):
+    """List all invoices with optional filters (status, project, search)."""
+    from django.db.models import Q
+    invoices = Invoice.objects.select_related('project', 'project__customer').order_by('-created_at')
+    q = request.GET.get('q', '').strip()
+    status = request.GET.get('status', '').strip()
+    project_pk = request.GET.get('project', '').strip()
+    if q:
+        invoices = invoices.filter(
+            Q(invoice_number__icontains=q) |
+            Q(project__title__icontains=q) |
+            Q(project__customer__name__icontains=q)
+        )
+    if status:
+        invoices = invoices.filter(status=status)
+    if project_pk:
+        invoices = invoices.filter(project_id=project_pk)
+    context = {
+        'invoices': invoices,
+        'projects': Project.objects.all().order_by('title'),
+        'status_choices': Invoice.InvoiceStatus.choices,
+    }
+    return render(request, 'invoices/invoice_list.html', context)
+
+
+@login_required
+@role_required('admin')
+def invoice_create_select(request):
+    """Show project selector before creating an invoice."""
+    if request.method == 'POST':
+        project_pk = request.POST.get('project')
+        if project_pk:
+            return redirect('invoices:invoice_create', project_pk=project_pk)
+    projects = Project.objects.all().order_by('title')
+    return render(request, 'invoices/invoice_create_select.html', {'projects': projects})
+
+
+@login_required
 def invoice_create_edit(request, pk=None, project_pk=None):
     """
     Handles both the creation of a new invoice from a project and

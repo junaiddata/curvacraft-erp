@@ -1,42 +1,35 @@
-<!-- templates/projects/project_tracking_form.html -->
 {% extends "base.html" %}
+{% block title %}Edit Milestone Tracking{% endblock %}
 {% block content %}
-<div style="display: flex; justify-content: space-between; align-items: center;">
-    <h1>Edit Milestone Tracking</h1>
-    <a href="{% url 'projects:project_tracking_detail' pk=project.pk %}">&larr; Back to View</a>
-</div>
-<h4>Project: {{ project.title }}</h4>
+<div class="form-page" style="max-width: 1100px; margin: 0 auto;">
+    <div class="page-header" style="flex-direction: column; align-items: flex-start; gap: 0.5rem;">
+        <a href="{% url 'projects:project_tracking_detail' pk=project.pk %}" class="text-muted" style="font-size: 0.875rem; text-decoration: none;">&larr; Back to View</a>
+        <h1 class="page-title">Edit Milestone Tracking</h1>
+        <p class="page-subtitle text-muted">Project: {{ project.title }}</p>
+    </div>
 
 <style>
-    .phase-card { margin-bottom: 2rem; }
-    .phase-header-form { display: grid; grid-template-columns: 1.5fr 2fr 1.5fr; gap: 1rem; align-items: center; background-color: #e9ecef; padding: 0.5rem 1rem; border-radius: 8px 8px 0 0; }
-    .phase-header-form input { font-weight: bold; }
-    .task-table { margin-bottom: 1rem; }
-    .task-table input, .task-table textarea { width: 100%; border: 1px solid #ccc; padding: 4px; }
+    .phase-card { margin-bottom: var(--space-6); }
+    .phase-header-form { display: grid; grid-template-columns: 1.5fr 2fr 1.5fr; gap: 1rem; align-items: center; background: #f1f5f9; padding: var(--space-4); border-radius: var(--radius-md) var(--radius-md) 0 0; }
+    .phase-header-form input { font-weight: 600; }
+    .task-table input, .task-table textarea { width: 100%; padding: var(--space-2) var(--space-3); border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: var(--text-sm); }
     .task-table textarea { resize: vertical; }
-    .task-row input[type="checkbox"] { display: none; }
-    .delete-btn { background-color: var(--error); color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
-    .task-row.marked-for-deletion { opacity: 0.4; background-color: #fee2e2; }
 </style>
 
-    <form method="post">
+<form method="post">
         {% csrf_token %}
         <!-- Management form for the PARENT (Phase) formset -->
         {{ phase_formset.management_form }}
         
         {% for phase_form, task_formset in phase_and_formsets_zipped %}
-        <div class="card phase-card" style="padding: 0;">
+        <div class="form-section phase-card" style="padding: 0; overflow: hidden;">
             
             <!-- Hidden ID for the phase_form -->
             {{ phase_form.id }}
             
             <!-- Phase Header (with editable timeline) -->
     <!-- Phase Header (with ALL editable fields) -->
-    <div class="phase-header-form" style="background-color: #e9ecef; padding: 1rem; font-weight: bold; display: grid; grid-template-columns: 1.5fr 2fr 1.5fr; gap: 1rem; align-items: center;">
-        
-        <!-- Hidden ID for the phase_form -->
-        {{ phase_form.id }}
-
+    <div class="phase-header-form">
         <!-- Render the editable input fields -->
         <div>
             <label for="{{ phase_form.details.id_for_label }}" style="font-size: 0.8rem; color: #6c757d;">Details (e.g., Phase/Module)</label>
@@ -103,16 +96,17 @@
                 </tbody></table>
             </div>
 
-            <button type="button" class="add-row-btn btn-secondary" data-prefix="{{ task_formset.prefix }}">+ Add Task</button>
+            <button type="button" class="add-row-btn btn btn-secondary" data-prefix="{{ task_formset.prefix }}" style="margin-top: 1rem;">Add Task</button>
         </div>
     </div>
     {% endfor %}
-    
-    <hr>
-    <div style="text-align: right;">
-        <button type="submit">Save Schedule</button>
+
+    <div class="form-actions" style="margin-top: var(--space-6); border-top: none; padding-top: 0;">
+        <a href="{% url 'projects:project_tracking_detail' pk=project.pk %}" class="btn btn-secondary">Cancel</a>
+        <button type="submit" class="btn">Save Schedule</button>
     </div>
 </form>
+</div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {

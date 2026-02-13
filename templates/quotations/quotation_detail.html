@@ -29,7 +29,7 @@
     {% if quotation.quote_type == 'DESIGN' %}
         {% if not quotation.project %}
             <a href="{% url 'projects:create_project' quotation_pk=quotation.pk %}">
-                <button style="background-color: var(--success-color);">Convert to Project</button>
+                <button style="background-color: var(--success);">Convert to Project</button>
             </a>
         {% else %}
             <a href="{% url 'projects:project_detail' pk=quotation.project.pk %}">

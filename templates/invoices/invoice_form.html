@@ -1,36 +1,33 @@
-<!-- templates/invoices/invoice_form.html -->
 {% extends "base.html" %}
-{% block content %}
 {% load humanize %}
-<h1>{{ action }} Invoice</h1>
+{% block title %}{{ action }} Invoice{% endblock %}
+{% block content %}
+<div class="form-page" style="max-width: 900px; margin: 0 auto;">
+    <div class="page-header" style="flex-direction: column; align-items: flex-start; gap: 0.5rem;">
+        <a href="{% url 'projects:project_detail' pk=project.pk %}" class="text-muted" style="font-size: 0.875rem; text-decoration: none;">&larr; Back to Project</a>
+        <h1 class="page-title">{{ action }} Invoice</h1>
+        <p class="page-subtitle text-muted">For project: {{ project.title }}</p>
+    </div>
 
-<h4>For Project: {{ project.title }}</h4>
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-section">
+            <h3 class="form-section-title">Invoice Details</h3>
+            {{ form.as_p }}
+            <p class="text-muted" style="margin-top: 0.5rem; font-size: 0.8125rem;"><strong>Tip:</strong> For percentage-based billing, the Total Project Budget (pre-VAT) of {{ project.subtotal|floatformat:2|intcomma }} will be used automatically.</p>
+        </div>
 
-<style>
-    /* These styles are copied from quotation_form.html for consistency */
-    .item-form-row input[type="checkbox"] { display: none; }
-    .delete-btn { background-color: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
-    .item-form-row.marked-for-deletion { opacity: 0.5; text-decoration: line-through; }
-    .item-form-row.marked-for-deletion input,
-    .item-form-row.marked-for-deletion textarea { pointer-events: none; }
-</style>
-
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <hr>
-        <strong>Tip:</strong> For percentage-based billing, the <strong>Total Project Budget (pre-VAT) of {{ project.subtotal|floatformat:2|intcomma }}</strong> will be used automatically.
-    </p>
-
-    <h3>Line Items</h3>
-    <table id="items-table" style="width: 100%; border-collapse: collapse;">
+        <div class="form-section">
+            <h3 class="form-section-title">Line Items</h3>
+            <div class="table-container">
+            <table id="items-table" class="data-table">
         <thead>
-            <tr style="background-color: #f4f4f4;">
-                <th style="padding: 8px; text-align: left; width: 45%;">Description</th>
-                <th style="padding: 8px; text-align: left;">Type</th>
-                <th style="padding: 8px; text-align: left;">Qty / %</th>
-                <th style="padding: 8px; text-align: left;">Unit Price / Project Total</th>
-                <th style="padding: 8px; text-align: left;">Action</th>
+            <tr>
+                <th style="width: 45%;">Description</th>
+                <th>Type</th>
+                <th>Qty / %</th>
+                <th>Unit Price</th>
+                <th>Action</th>
             </tr>
         </thead>
         <tbody id="item-form-list">
@@ -67,11 +64,16 @@
             </tr>
         </tbody>
     </table>
+            </div>
+            <button type="button" id="add-item-form" class="btn btn-secondary" style="margin-top: 1rem;">Add Item</button>
+        </div>
 
-    <button type="button" id="add-item-form" style="margin-top: 1rem;">Add Another Item</button>
-    <hr>
-    <button type="submit">Save Invoice</button>
-</form>
+        <div class="form-actions">
+            <a href="{% url 'projects:project_detail' pk=project.pk %}" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn">Save Invoice</button>
+        </div>
+    </form>
+</div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {

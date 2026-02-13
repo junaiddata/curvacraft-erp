@@ -1,133 +1,105 @@
-<!-- templates/purchase_orders/po_form.html -->
 {% extends "base.html" %}
+{% block title %}{{ action }} Purchase Order{% endblock %}
 {% block content %}
-<h1>{{ action }} Purchase Order</h1>
+<div class="form-page" style="max-width: 960px; margin: 0 auto;">
+    <div class="page-header" style="flex-direction: column; align-items: flex-start; gap: 0.5rem;">
+        {% if po %}
+        <a href="{% url 'purchase_orders:po_detail' pk=po.pk %}" class="text-muted" style="font-size: 0.875rem; text-decoration: none;">&larr; Back to Purchase Order</a>
+        {% else %}
+        <a href="{% url 'purchase_orders:po_list' %}" class="text-muted" style="font-size: 0.875rem; text-decoration: none;">&larr; Back to Purchase Orders</a>
+        {% endif %}
+        <h1 class="page-title">{{ action }} Purchase Order</h1>
+    </div>
 
-<style>
-    /* Hide the actual DELETE checkbox */
-    .item-form-row input[type="checkbox"] {
-        display: none;
-    }
-    /* Style for the delete button */
-    .delete-btn {
-        background-color: #dc3545; /* Red color */
-        color: white;
-        border: none;
-        padding: 5px 10px;
-        border-radius: 4px;
-        cursor: pointer;
-    }
-    /* Style for a row that is marked for deletion */
-    .item-form-row.marked-for-deletion {
-        opacity: 0.5;
-        text-decoration: line-through;
-    }
-    .item-form-row.marked-for-deletion input,
-    .item-form-row.marked-for-deletion textarea {
-        pointer-events: none; /* Disable interaction with form fields */
-    }
-</style>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-section">
+            <h3 class="form-section-title">Header Details</h3>
+            {{ form.as_p }}
+        </div>
 
-<form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <hr>
+        <div class="form-section">
+            <h3 class="form-section-title">Line Items</h3>
+            <div class="table-container">
+                <table id="items-table" class="data-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 50%;">Description</th>
+                            <th>Quantity</th>
+                            <th>Unit</th>
+                            <th>Unit Price</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="item-form-list">
+                        {{ formset.management_form }}
+                        {% for item_form in formset.forms %}
+                        <tr class="item-form-row">
+                            {{ item_form.id }}
+                            <td>{{ item_form.description }}</td>
+                            <td>{{ item_form.quantity }}</td>
+                            <td>{{ item_form.unit }}</td>
+                            <td>{{ item_form.unit_price }}</td>
+                            <td>
+                                {{ item_form.DELETE }}
+                                <button type="button" class="delete-btn">Delete</button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <table style="display:none;">
+                <tbody id="empty-form-template">
+                    <tr class="item-form-row">
+                        {{ formset.empty_form.id }}
+                        <td>{{ formset.empty_form.description }}</td>
+                        <td>{{ formset.empty_form.quantity }}</td>
+                        <td>{{ formset.empty_form.unit }}</td>
+                        <td>{{ formset.empty_form.unit_price }}</td>
+                        <td>
+                            {{ formset.empty_form.DELETE }}
+                            <button type="button" class="delete-btn">Delete</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <button type="button" id="add-item-form" class="btn btn-secondary" style="margin-top: 1rem;">Add Item</button>
+        </div>
 
-    <h3>Line Items</h3>
-    <table id="items-table" style="width: 100%; border-collapse: collapse;">
-        <thead>
-            <tr style="background-color: #f4f4f4;">
-                <th style="padding: 8px; text-align: left; width: 50%;">Description</th>
-                <th style="padding: 8px; text-align: left;">Quantity</th>
-                <th style="padding: 8px; text-align: left;">Unit</th>
-                <th style="padding: 8px; text-align: left;">Unit Price</th>
-                <th style="padding: 8px; text-align: left;">Action</th>
-            </tr>
-        </thead>
-        <tbody id="item-form-list">
-            {{ formset.management_form }}
-            {% for item_form in formset.forms %}
-                <tr class="item-form-row">
-                    {{ item_form.id }}
-                    <td>{{ item_form.description }}</td>
-                    <td>{{ item_form.quantity }}</td>
-                    <td>{{ item_form.unit }}</td>
-                    <td>{{ item_form.unit_price }}</td>
-                    <td>
-                        <!-- The hidden checkbox -->
-                        {{ item_form.DELETE }}
-                        <!-- The visible delete button -->
-                        <button type="button" class="delete-btn">Delete</button>
-                    </td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
-    <!-- Hidden template for new rows -->
-    <table style="display:none;">
-        <tbody id="empty-form-template">
-            <tr class="item-form-row">
-                {{ formset.empty_form.id }}
-                <td>{{ formset.empty_form.description }}</td>
-                <td>{{ formset.empty_form.quantity }}</td>
-                <td>{{ formset.empty_form.unit }}</td>
-                <td>{{ formset.empty_form.unit_price }}</td>
-                <td>
-                    {{ formset.empty_form.DELETE }}
-                    <button type="button" class="delete-btn">Delete</button>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-
-    <button type="button" id="add-item-form" style="margin-top: 1rem;">Add Another Item</button>
-    <hr>
-    <button type="submit">Save Purchase Order</button>
-    {% if po %}
-        <a href="{% url 'purchase_orders:po_detail' pk=po.pk %}"><button type="button">Cancel</button></a>
-    {% else %}
-        <a href="{% url 'purchase_orders:po_list' %}"><button type="button">Cancel</button></a>
-    {% endif %}
-</form>
+        <div class="form-actions">
+            {% if po %}
+            <a href="{% url 'purchase_orders:po_detail' pk=po.pk %}" class="btn btn-secondary">Cancel</a>
+            {% else %}
+            <a href="{% url 'purchase_orders:po_list' %}" class="btn btn-secondary">Cancel</a>
+            {% endif %}
+            <button type="submit" class="btn">Save Purchase Order</button>
+        </div>
+    </form>
+</div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const formListBody = document.getElementById('item-form-list');
     const emptyFormTemplate = document.getElementById('empty-form-template').innerHTML;
     const totalFormsInput = document.getElementById('id_items-TOTAL_FORMS');
-    
-    // --- ADD ITEM LOGIC ---
     document.getElementById('add-item-form').addEventListener('click', function() {
         let formNum = parseInt(totalFormsInput.value);
         let newFormHtml = emptyFormTemplate.replace(/__prefix__/g, formNum);
         formListBody.insertAdjacentHTML('beforeend', newFormHtml);
         totalFormsInput.value = formNum + 1;
     });
-
-    // --- DELETE ITEM LOGIC ---
-    // Use event delegation to handle clicks on buttons added now or in the future
     formListBody.addEventListener('click', function(event) {
         if (event.target && event.target.classList.contains('delete-btn')) {
             const row = event.target.closest('.item-form-row');
-            
-            // For new, unsaved forms, we can just remove them from the page
             if (!row.querySelector('input[name$="-id"]')) {
-                if (confirm('Are you sure you want to remove this new item?')) {
-                    row.remove();
-                    // Note: We don't decrement TOTAL_FORMS for simplicity,
-                    // as Django handles gaps in form numbering gracefully.
-                }
+                if (confirm('Remove this new item?')) row.remove();
                 return;
             }
-            
-            // For existing forms, we check the hidden checkbox
             const deleteCheckbox = row.querySelector('input[type="checkbox"]');
-            if (deleteCheckbox) {
-                if (confirm('Are you sure you want to delete this item? This will be permanent upon saving.')) {
-                    deleteCheckbox.checked = true;
-                    row.classList.add('marked-for-deletion');
-                }
+            if (deleteCheckbox && confirm('Delete this item upon saving?')) {
+                deleteCheckbox.checked = true;
+                row.classList.add('marked-for-deletion');
             }
         }
     });

@@ -31,16 +31,27 @@ from reportlab.lib.units import inch
 def dashboard(request):
     # Check the role of the logged-in user
     if request.user.role == 'admin':
-        # Admin sees all projects
-        projects = Project.objects.all().order_by('-created_at')
+        projects = Project.objects.select_related('customer').prefetch_related('assigned_scos').order_by('-created_at')
         template_name = 'projects/project_list.html'
-    else: # The user is an SCO
-        # SCO sees only their assigned projects
-        projects = Project.objects.filter(assigned_scos=request.user).order_by('-created_at')
+    else:
+        projects = Project.objects.filter(assigned_scos=request.user).select_related('customer').prefetch_related('assigned_scos').order_by('-created_at')
         template_name = 'projects/sco_dashboard.html'
-    
+
+    # Apply filters for admin (project list has filter bar)
+    q = request.GET.get('q', '').strip()
+    status_filter = request.GET.get('status', '').strip()
+    if q and request.user.role == 'admin':
+        projects = projects.filter(
+            Q(title__icontains=q) |
+            Q(customer__name__icontains=q) |
+            Q(location__icontains=q)
+        )
+    if status_filter and request.user.role == 'admin':
+        projects = projects.filter(status=status_filter)
+
     context = {
-        'projects': projects
+        'projects': projects,
+        'status_choices': Project.ProjectStatus.choices,
     }
     return render(request, template_name, context)
 

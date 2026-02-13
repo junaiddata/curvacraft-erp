@@ -1,18 +1,22 @@
     <!-- templates/reports/dpr_list.html -->
-    {% extends "base.html" %}
-    {% block content %}
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-        <div>
-            <h1>Daily Progress Reports (DPR)</h1>
-            <h4>Project: {{ project.title }}</h4>
-        </div>
-        <div>
-            <a href="{% url 'reports:dpr_create' project_pk=project.pk %}" class="btn">+ Create New DPR</a>
-            <a href="{% url 'projects:project_detail' pk=project.pk %}" style="margin-left: 1rem;">&larr; Back to Project</a>
-        </div>
+{% extends "base.html" %}
+{% block title %}DPR - {{ project.title }}{% endblock %}
+{% block content %}
+<div class="list-page">
+<div class="page-header">
+    <h1 class="page-title">Daily Progress Reports</h1>
+    <p class="page-subtitle text-muted">Project: {{ project.title }}</p>
+    <div style="display: flex; gap: 0.5rem;">
+        <a href="{% url 'reports:dpr_create' project_pk=project.pk %}" class="btn">Create DPR</a>
+        {% if user.role == 'admin' %}
+        <a href="{% url 'projects:project_detail' pk=project.pk %}" class="btn btn-secondary">&larr; Project</a>
+        {% else %}
+        <a href="{% url 'core:home' %}" class="btn btn-secondary">&larr; Dashboard</a>
+        {% endif %}
     </div>
+</div>
 
-    <div class="table-container" style="margin-top: 2rem;">
+<div class="table-container">
         <table class="data-table">
             <thead>
                 <tr>
@@ -29,11 +33,8 @@
                     <td>{{ report.date|date:"d M Y" }}</td>
                     <td>{{ report.created_by.username }}</td>
                     <td>
-                        <a href="{% url 'reports:dpr_edit' pk=report.pk %}"><button class="btn-secondary">Edit</button></a>
-                        <!-- We will add the PDF button later -->
-                            <a href="{% url 'reports:dpr_pdf' pk=report.pk %}" target="_blank">
-                                        <button class="btn-secondary">View PDF</button>
-                                    </a>
+                        <a href="{% url 'reports:dpr_edit' pk=report.pk %}" class="btn btn-secondary btn-sm">Edit</a>
+                        <a href="{% url 'reports:dpr_pdf' pk=report.pk %}" target="_blank" class="btn btn-secondary btn-sm">PDF</a>
                     </td>
                 </tr>
                 {% empty %}
@@ -42,4 +43,5 @@
             </tbody>
         </table>
     </div>
-    {% endblock %}
+</div>
+{% endblock %}
