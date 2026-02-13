@@ -345,7 +345,7 @@
         }
 
         /* Buttons - use app.css for primary, override for consistency */
-        button, input[type="submit"], .btn {
+        button:not(.tab-btn), input[type="submit"], .btn:not(.tab-btn) {
             background: var(--primary-dark);
             color: white;
             border: none;
@@ -357,7 +357,7 @@
             transition: background-color 0.2s;
         }
 
-        button:hover, input[type="submit"]:hover, .btn:hover {
+        button:hover:not(.tab-btn), input[type="submit"]:hover, .btn:hover:not(.tab-btn) {
             background: var(--primary-medium);
             color: white;
         }

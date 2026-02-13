@@ -193,7 +193,7 @@ input[type="submit"] {
 
 .btn-primary,
 .btn,
-button:not(.btn-secondary):not(.btn-outline):not(.btn-danger),
+button:not(.btn-secondary):not(.btn-outline):not(.btn-danger):not(.tab-btn),
 input[type="submit"] {
     background: var(--color-primary);
     color: white;
@@ -202,7 +202,7 @@ input[type="submit"] {
 
 .btn-primary:hover,
 .btn:hover:not(.btn-secondary):not(.btn-outline):not(.btn-danger),
-button:hover:not(.btn-secondary):not(.btn-outline):not(.btn-danger),
+button:hover:not(.btn-secondary):not(.btn-outline):not(.btn-danger):not(.tab-btn),
 input[type="submit"]:hover {
     background: var(--color-primary-hover);
     color: white;
@@ -412,7 +412,8 @@ table.data-table {
     color: var(--color-primary);
     font-weight: 600;
     background: var(--color-primary-light);
-    border-bottom-color: var(--color-accent);
+    border-bottom: 2px solid var(--color-accent);
+    border-radius: 6px 6px 0 0;
 }
 
 .tab-content {
