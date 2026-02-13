@@ -135,9 +135,14 @@ class Project(models.Model):
         """
         THE CORRECT "AMOUNT PENDING". This is the actual cash you are waiting for.
         Calculated as: Total Billed (incl. VAT) - Total Payments Received - Total Credit Notes Issued.
+        Rounds to 2 decimals and treats dust amounts (|value| <= 0.01) as zero.
         """
-        # This is the corrected, final formula.
-        return self.total_invoiced_grand - self.total_received - self.total_credited
+        raw = self.total_invoiced_grand - self.total_received - self.total_credited
+        rounded = round(raw, 2)
+        # Treat -0.01, 0.01 etc as zero (rounding dust from Decimal arithmetic)
+        if abs(rounded) <= Decimal('0.01'):
+            return Decimal('0.00')
+        return rounded
     
 
 # --- ADD THIS ENTIRE NEW MODEL ---
